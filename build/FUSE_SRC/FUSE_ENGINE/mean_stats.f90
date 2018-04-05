@@ -20,6 +20,7 @@ USE multiroute                                        ! routed runoff
 USE multi_flux                                        ! fluxes
 USE multistats                                        ! summary statistics
 USE model_numerix                                     ! model numerix parameters and data
+USE eval_metrics                                      ! functions for computing different metrics
 
 IMPLICIT NONE
 ! internal
@@ -28,10 +29,17 @@ INTEGER(I4B)                           :: NS          ! number of samples
 INTEGER(I4B)                           :: IERR        ! error code for allocate/deallocate statements
 REAL(SP), DIMENSION(:), ALLOCATABLE    :: QOBS        ! observed runoff - whole time series
 REAL(SP), DIMENSION(:), ALLOCATABLE    :: QOBS_AVAIL  ! observed runoff - only time steps with QOBS available
+REAL(SP), DIMENSION(:), ALLOCATABLE    :: QOBS_SMA    ! simple moving average observed runoff - only time steps with QOBS available
+REAL(SP), DIMENSION(:), ALLOCATABLE    :: QOBS_INT_MAX! observed interval maximum values
+INTEGER(I4B), DIMENSION(:), ALLOCATABLE:: cal_mask_obs ! mask for calibration of interval values, observed values
+INTEGER(I4B), DIMENSION(:), ALLOCATABLE:: cal_mask_sim ! mask for calibration of interval values, simulated values
 INTEGER(I4B)                           :: NUM_AVAIL   ! number of time steps with QOBS available
+INTEGER(I4B)                           :: INTERVAL    ! interval size (timesteps) for interval maximum value calculation
 LOGICAL(SP), DIMENSION(:), ALLOCATABLE :: QOBS_MASK   ! boolean: is QOBS available?
 REAL(SP), DIMENSION(:), ALLOCATABLE    :: QSIM        ! simulated runoff - whole time series
 REAL(SP), DIMENSION(:), ALLOCATABLE    :: QSIM_AVAIL  ! simulated runoff - only time steps with QOBS available
+REAL(SP), DIMENSION(:), ALLOCATABLE    :: QSIM_SMA    ! simple moving average simulated runoff - only time steps with QOBS available
+REAL(SP), DIMENSION(:), ALLOCATABLE    :: QSIM_INT_MAX! simulated interval maximum values
 REAL(SP), DIMENSION(:), ALLOCATABLE    :: DOBS        ! observed runoff anomalies
 REAL(SP), DIMENSION(:), ALLOCATABLE    :: DSIM        ! simulated runoff anomalies
 REAL(SP), DIMENSION(:), ALLOCATABLE    :: RAWD        ! observed-simulated differences in flow
@@ -71,15 +79,31 @@ NUM_AVAIL = COUNT(QOBS_MASK)	! number of time steps for which QOBS is available
 
 PRINT *, 'Number of time steps with available discharge in evaluation period = ', NUM_AVAIL
 
-! extract elements from QOBS and QSIM for time steps with QOBS available
+!allocate space for flow and other compuational variables
 ALLOCATE(QOBS_AVAIL(NUM_AVAIL),QSIM_AVAIL(NUM_AVAIL),DOBS(NUM_AVAIL),DSIM(NUM_AVAIL),RAWD(NUM_AVAIL),LOGD(NUM_AVAIL),STAT=IERR)
 
+!allocate space for simple moving average flow variables
+ALLOCATE(QOBS_SMA(NUM_AVAIL),QSIM_SMA(NUM_AVAIL),STAT=IERR)   !allocate space for simple moving average flow variables
+
+! extract elements from QOBS and QSIM for time steps with QOBS available
 QOBS_AVAIL=PACK(QOBS,QOBS_MASK,QOBS_AVAIL)  ! moves QOBS time steps indicated by QOBS_MASK to QOBS_AVAIL,
 											                      ! if no values is missing (i.e. NS = NUM_AVAIL) then QOBS_AVAIL
 											                      ! should be a copy of QOBS
 QSIM_AVAIL=PACK(QSIM,QOBS_MASK,QSIM_AVAIL)  ! moves QSIM time steps indicated by QOBS_MASK to QSIM_AVAIL
 											                      ! if no values is missing (i.e. NS = NUM_AVAIL) then QSIM_AVAIL
 										                      	! should be a copy of QSIM
+
+!simple moving average (SMA) of flows
+call simple_moving_average(QOBS_AVAIL,3,QOBS_SMA)
+call simple_moving_average(QSIM_AVAIL,3,QSIM_SMA)
+
+!interval max values
+INTERVAL = 365
+call interval_max_vals(QSIM_AVAIL,INTERVAL,QSIM_INT_MAX,cal_mask_sim)
+call interval_max_vals(QOBS_AVAIL,INTERVAL,QOBS_INT_MAX,cal_mask_obs)
+
+!print *,'final: ',pack(qobs_int_max,cal_mask_obs==1)
+!print *,'final: ',pack(qsim_int_max,cal_mask_obs==1)
 
 ! compute mean
 XB_OBS = SUM(QOBS_AVAIL(:)) / REAL(NUM_AVAIL, KIND(SP))
@@ -93,9 +117,23 @@ SS_SIM  = DOT_PRODUCT(DSIM,DSIM)  ! = SUM( DSIM(:)*DSIM(:) )
 SS_LOBS = DOT_PRODUCT(DOBS(2:NUM_AVAIL),DOBS(1:NUM_AVAIL-1))
 SS_LSIM = DOT_PRODUCT(DSIM(2:NUM_AVAIL),DSIM(1:NUM_AVAIL-1))
 ! compute sum of squared differences between model and observations
-RAWD(:) = QSIM_AVAIL(:) - QOBS_AVAIL(:)
+!RAWD(:) = QSIM_AVAIL(:) - QOBS_AVAIL(:)
+!using averaged flow (SMA)
+!RAWD(:) = QSIM_SMA(:) - QOBS_SMA(:)
+
+!using interval maximum values
+deallocate(rawd)
+allocate(rawd(size(qsim_int_max)))
+RAWD(:) = QSIM_INT_MAX(:) - QOBS_INT_MAX(:)
+!print *,'interval max values: '
+!print *, 'model: ', qsim_int_max
+!print *, 'obs: ', qobs_int_max
+
 LOGD(:) = LOG(QSIM_AVAIL(:)+NO_ZERO) - LOG(QOBS_AVAIL(:)+NO_ZERO)
+
 SS_RAW  = DOT_PRODUCT(RAWD,RAWD)  ! = SUM( RAWD(:)*RAWD(:) )
+!SS_RAW  = SUM(RAWD(:)*RAWD(:),cal_mask_obs==1)  ! sum of squared errors for cal_mask values only
+
 SS_LOG  = DOT_PRODUCT(LOGD,LOGD)  ! = SUM( LOGD(:)*LOGD(:) )
 ! ---------------------------------------------------------------------------------------
 ! (2) COMPUTE ERROR STATISTICS
@@ -110,7 +148,15 @@ MSTATS%QSIM_CVAR = SQRT( SS_SIM / REAL(NUM_AVAIL-1, KIND(SP)) ) / (XB_SIM+NO_ZER
 MSTATS%QOBS_LAG1 = SS_LOBS / (SQRT(SS_OBS*SS_OBS)+NO_ZERO)
 MSTATS%QSIM_LAG1 = SS_LSIM / (SQRT(SS_SIM*SS_SIM)+NO_ZERO)
 ! compute the root-mean-squared-error of flow
-MSTATS%RAW_RMSE  = SQRT( SS_RAW / REAL(NUM_AVAIL, KIND(SP)) )
+!MSTATS%RAW_RMSE  = SQRT( SS_RAW / REAL(NUM_AVAIL, KIND(SP)) )
+!for interval maxes
+MSTATS%RAW_RMSE  = SQRT( SS_RAW / REAL(SIZE(RAWD), KIND(SP)) )
+
+!sub KGE in for RAW_RMSE
+!use averaged flow
+!call calc_kge(QSIM_SMA,QOBS_SMA,MSTATS%RAW_RMSE)
+
+
 ! compute the root-mean-squared-error of LOG flow
 MSTATS%LOG_RMSE  = SQRT( SS_LOG / REAL(NUM_AVAIL, KIND(SP)) )
 ! compute the Nash-Sutcliffe score

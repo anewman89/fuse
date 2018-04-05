@@ -36,6 +36,7 @@ bin
 # Fortran module files
 *.mod
 *.smod
+*genmod.f90
 
 # Compiled Static libraries
 *.lai

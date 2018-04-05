@@ -1,9 +1,0 @@
-        !COMPILER-GENERATED INTERFACE MODULE: Thu Jul 14 22:23:01 2016
-        MODULE TAU_SOBOL__genmod
-          INTERFACE 
-            FUNCTION TAU_SOBOL(DIM_NUM)
-              INTEGER(KIND=4) :: DIM_NUM
-              INTEGER(KIND=4) :: TAU_SOBOL
-            END FUNCTION TAU_SOBOL
-          END INTERFACE 
-        END MODULE TAU_SOBOL__genmod

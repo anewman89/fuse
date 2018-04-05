@@ -412,10 +412,10 @@ ELSE IF(fuse_mode == 'calib_sce')THEN ! calibrate FUSE using SCE
 
   ! assign algorithmic control parameters for SCE
   NOPT   =  NUMPAR         ! number of parameters to be optimized (NUMPAR in module multiparam)
-  MAXN   =     20000 			 ! maximum number of trials before optimization is terminated
+  MAXN   =  10000          ! maximum number of trials before optimization is terminated
   KSTOP  =      3          ! number of shuffling loops the value must change by PCENTO (MAX=9)
   PCENTO =      0.001      ! the percentage
-  NGS    =     10          ! number of complexes in the initial population
+  NGS    =     15          ! number of complexes in the initial population
   NPG    =  2*NOPT + 1     ! number of points in each complex
   NPS    =    NOPT + 1     ! number of points in a sub-complex
   NSPL   =  2*NOPT + 1     ! number of evolution steps allowed for each complex before shuffling

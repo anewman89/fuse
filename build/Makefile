@@ -7,7 +7,7 @@
 #========================================================================
 
 # Define core directory below which everything resides
-F_MASTER = /home/naddor/fuse/
+F_MASTER = /glade/u/home/anewman/fuse/
 
 # Core directory that contains FUSE source code
 F_KORE_DIR = $(F_MASTER)build/FUSE_SRC/
@@ -16,7 +16,7 @@ F_KORE_DIR = $(F_MASTER)build/FUSE_SRC/
 MOD_PATH = $(F_MASTER)build/
 
 # Define the directory for the executables
-EXE_PATH = $(F_MASTER)bin
+EXE_PATH = $(F_MASTER)bin/
 
 #========================================================================
 # PART 1: Assemble all of the FUSE sub-routines
@@ -56,6 +56,7 @@ FUSE_DATAMS=    \
 	multi_flux.f90 \
 	multiroute.f90 \
 	multistats.f90 \
+	eval_metrics.f90 \
 	model_numerix.f90
 DATAMS = $(patsubst %, $(ENGINE_DIR)/%, $(FUSE_DATAMS))
 
@@ -210,10 +211,10 @@ ifeq "$(FC)" "gfortran"
 endif
 
 ifeq "$(FC)" "ifort"
- 	HDF_PATH  = /opt/hdf5
-	NCDF_PATH = /opt/netcdf4-intel
+ 	HDF_PATH  = 
+	NCDF_PATH = /glade/u/apps/ch/opt/netcdf/4.4.1.1/intel/17.0.1/
 	SZ_PATH = /opt/szip-2.1
-	Z_PATH = /opt/zlib-1.2.8
+	Z_PATH = /lib/
 	LIBNETCDF = -lcurl -L$(NCDF_PATH)/lib -lnetcdff -lnetcdf -L$(HDF_PATH)/lib -lhdf5_hl -lhdf5 -L$(SZ_PATH)/lib -lsz -L$(Z_PATH)/lib -lz
 	INCNETCDF = -I$(NCDF_PATH)/include -I$(HDF_PATH)/include
 endif
@@ -244,8 +245,9 @@ ifeq "$(FC)" "gfortran"
 endif
 
 ifeq "$(FC)" "ifort"
- FLAGS_NORMA = -fast
- # FLAGS_NORMA = -O3 -xHost # nearly as fast as -fast but more stable
+ # FLAGS_NORMA = -fast
+ #FLAGS_NORMA = -O3 -xHost # nearly as fast as -fast but more stable
+ FLAGS_NORMA = -O2 -fpe0 -ftrapuv -heap-arrays
  FLAGS_DEBUG = -debug -debug-parameters all -traceback -ftrapuv -g -fpe0 -u -check all -check noarg_temp_created -CB
  # FLAGS_DEBUG = -debug all -g -O0 -check bounds -check arg_temp_created -traceback -fpe0 -ftrapuv -heap-arrays
 endif
@@ -260,13 +262,14 @@ all: compile_URS install_URS clean
 
 # compile FUSE into a static library
 compile_URS:
-	$(FC) $(FLAGS_DEBUG) $(FUSE_ALL) $(URS_DRIVER) \
+	$(FC) $(FLAGS_NORMA) $(FUSE_ALL) $(URS_DRIVER) \
 	$(LIBNETCDF) $(INCNETCDF) -o $(URS_DRIVER__EX)
 
 # Remove object files
 clean:
 						rm -f *.o
 						rm -f *.mod
+						rm -f *genmod.f90
 #
 # Copy the executable to the bin directory
 install_URS:
