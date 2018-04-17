@@ -149,13 +149,16 @@ MSTATS%QOBS_LAG1 = SS_LOBS / (SQRT(SS_OBS*SS_OBS)+NO_ZERO)
 MSTATS%QSIM_LAG1 = SS_LSIM / (SQRT(SS_SIM*SS_SIM)+NO_ZERO)
 ! compute the root-mean-squared-error of flow
 !MSTATS%RAW_RMSE  = SQRT( SS_RAW / REAL(NUM_AVAIL, KIND(SP)) )
+
 !for interval maxes
-MSTATS%RAW_RMSE  = SQRT( SS_RAW / REAL(SIZE(RAWD), KIND(SP)) )
+!MSTATS%RAW_RMSE  = SQRT( SS_RAW / REAL(SIZE(RAWD), KIND(SP)) )
 
 !sub KGE in for RAW_RMSE
 !use averaged flow
 !call calc_kge(QSIM_SMA,QOBS_SMA,MSTATS%RAW_RMSE)
 
+!try kge of interval maxes
+call calc_kge(QSIM_INT_MAX,QOBS_INT_MAX,MSTATS%RAW_RMSE)
 
 ! compute the root-mean-squared-error of LOG flow
 MSTATS%LOG_RMSE  = SQRT( SS_LOG / REAL(NUM_AVAIL, KIND(SP)) )

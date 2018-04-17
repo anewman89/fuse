@@ -210,7 +210,7 @@ MODULE eval_metrics
     call pearson_corr(model,observation,linear_corr)
 
     !compute KGE
-    kge = -( 1.0 - sqrt((linear_corr-1.0)**2 + (alpha-1.0)**2 + (beta-1.0)**2) )
+    kge = -( 1.0 - sqrt((linear_corr-1.0)**2 + 5*(alpha-1.0)**2 + (beta-1.0)**2) )
 
     return
   end subroutine

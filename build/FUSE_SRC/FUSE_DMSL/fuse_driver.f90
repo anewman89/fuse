@@ -412,7 +412,7 @@ ELSE IF(fuse_mode == 'calib_sce')THEN ! calibrate FUSE using SCE
 
   ! assign algorithmic control parameters for SCE
   NOPT   =  NUMPAR         ! number of parameters to be optimized (NUMPAR in module multiparam)
-  MAXN   =  10000          ! maximum number of trials before optimization is terminated
+  MAXN   =  20000          ! maximum number of trials before optimization is terminated
   KSTOP  =      3          ! number of shuffling loops the value must change by PCENTO (MAX=9)
   PCENTO =      0.001      ! the percentage
   NGS    =     15          ! number of complexes in the initial population
@@ -422,7 +422,7 @@ ELSE IF(fuse_mode == 'calib_sce')THEN ! calibrate FUSE using SCE
   MINGS  =  NGS            ! minimum number of complexes required
   INIFLG =  1              ! 1 = include initial point in the population
   IPRINT =  1              ! 0 = supress printing
-
+  ISEED  = 44              ! integer used in start of initial random SCE parameter value draw
   NUMPSET=1.2*MAXN         ! will be used to define the parameter set dimension of the NetCDF files
                            ! using 1.2MAXN since the final number of parameter sets produced by SCE is unknown
 
