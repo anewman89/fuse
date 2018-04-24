@@ -135,7 +135,10 @@ FUSE_PRELIM= \
 	qbsaturatn.f90 \
 	qtimedelay.f90 \
 	init_stats.f90 \
-	init_state.f90
+	init_state.f90 \
+	get_user_state_info.f90 \
+	init_user_state.f90 \
+	output_state.f90
 PRELIM = $(patsubst %, $(ENGINE_DIR)/%, $(FUSE_PRELIM))
 
 # Define routines for the FUSE model runs

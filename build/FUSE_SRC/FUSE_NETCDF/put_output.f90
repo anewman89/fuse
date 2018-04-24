@@ -15,6 +15,7 @@ SUBROUTINE PUT_OUTPUT(iSpat1,iSpat2,ITIM,IMOD,IPAR)
   USE varextract_module                                 ! interface for the function to extract variables
   USE multiforce,ONLY:timDat                            ! time data
   USE multistate, only: ncid_out                        ! NetCDF output file ID
+  USE multibands,ONLY:N_BANDS                           ! number of snow bands
 
   IMPLICIT NONE
   ! input
@@ -33,6 +34,9 @@ SUBROUTINE PUT_OUTPUT(iSpat1,iSpat2,ITIM,IMOD,IPAR)
   REAL(MSP)                              :: AVAR        ! desired variable (SINGLE PRECISION)
   REAL(MSP)                              :: tDat        ! time data
   INTEGER(I4B)                           :: IVAR_ID     ! variable ID
+
+  CHARACTER(LEN=500)                     :: swe_band    ! string of elevation band swe
+
   INCLUDE 'netcdf.inc'                                  ! use netCDF libraries
   ! ---------------------------------------------------------------------------------------
   ! open file
@@ -44,21 +48,57 @@ SUBROUTINE PUT_OUTPUT(iSpat1,iSpat2,ITIM,IMOD,IPAR)
   ! loop through time-varying model output
   DO IVAR=1,NOUTVAR
 
-     ! check if there is a need to write the variable - see also def_output
-     IF (Q_ONLY) THEN
-        WRITE_VAR=.FALSE.
-        IF (TRIM(VNAME(IVAR)).EQ.'ppt') WRITE_VAR=.TRUE.
-        IF (TRIM(VNAME(IVAR)).EQ.'pet') WRITE_VAR=.TRUE.
-        IF (TRIM(VNAME(IVAR)).EQ.'obsq') WRITE_VAR=.TRUE.
-        IF (TRIM(VNAME(IVAR)).EQ.'evap_1') WRITE_VAR=.TRUE.
-        IF (TRIM(VNAME(IVAR)).EQ.'evap_2') WRITE_VAR=.TRUE.
-        IF (TRIM(VNAME(IVAR)).EQ.'q_instnt') WRITE_VAR=.TRUE.
-        IF (TRIM(VNAME(IVAR)).EQ.'q_routed') WRITE_VAR=.TRUE.
-        IF (TRIM(VNAME(IVAR)).EQ.'watr_1')   WRITE_VAR=.TRUE.
-        IF (TRIM(VNAME(IVAR)).EQ.'watr_2')   WRITE_VAR=.TRUE.
-        IF (TRIM(VNAME(IVAR)).EQ.'swe_tot')   WRITE_VAR=.TRUE.
-        IF (.NOT.WRITE_VAR) CYCLE
-     ENDIF
+
+! check if there is a need to write the variable - see also put_output
+    IF (Q_ONLY) THEN
+      WRITE_VAR=.FALSE.
+      IF (TRIM(VNAME(IVAR)).EQ.'ppt')      WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'obsq')     WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'pet')      WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'evap_1')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'evap_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'q_instnt') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'q_routed') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'watr_1')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'watr_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_1')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_1a')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_1b')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_1')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_2a')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_2b')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'swe_tot')  WRITE_VAR=.TRUE.
+      DO ISNW=1,N_BANDS
+        WRITE(TXT_ISNW,'(I2)') ISNW              ! convert band no. to text
+        IF (ISNW.LT.10) TXT_ISNW(1:1) = '0'      ! pad with zeros
+        swe_band = 'swe_z'//TXT_ISNW
+        IF (TRIM(VNAME(IVAR)).EQ. swe_band) WRITE_VAR=.TRUE.
+      END DO
+      !IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
+      !IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
+      !IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
+      !IF (TRIM(VNAME(IVAR)).EQ.'oflow_2') WRITE_VAR=.TRUE.
+      !IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
+      IF (.NOT.WRITE_VAR) CYCLE
+    ENDIF
+
+!     ! check if there is a need to write the variable - see also def_output
+!     IF (Q_ONLY) THEN
+!        WRITE_VAR=.FALSE.
+!        IF (TRIM(VNAME(IVAR)).EQ.'ppt') WRITE_VAR=.TRUE.
+!        IF (TRIM(VNAME(IVAR)).EQ.'pet') WRITE_VAR=.TRUE.
+!        IF (TRIM(VNAME(IVAR)).EQ.'obsq') WRITE_VAR=.TRUE.
+!        IF (TRIM(VNAME(IVAR)).EQ.'evap_1') WRITE_VAR=.TRUE.
+!        IF (TRIM(VNAME(IVAR)).EQ.'evap_2') WRITE_VAR=.TRUE.
+!        IF (TRIM(VNAME(IVAR)).EQ.'q_instnt') WRITE_VAR=.TRUE.
+!        IF (TRIM(VNAME(IVAR)).EQ.'q_routed') WRITE_VAR=.TRUE.
+!        IF (TRIM(VNAME(IVAR)).EQ.'watr_1')   WRITE_VAR=.TRUE.
+!        IF (TRIM(VNAME(IVAR)).EQ.'watr_2')   WRITE_VAR=.TRUE.
+!        IF (TRIM(VNAME(IVAR)).EQ.'swe_tot')   WRITE_VAR=.TRUE.
+!        IF (.NOT.WRITE_VAR) CYCLE
+!     ENDIF
 
      ! write the variable
      XVAR = VAREXTRACT(VNAME(IVAR)); AVAR=XVAR                                  ! get variable ivar
@@ -96,6 +136,7 @@ SUBROUTINE PUT_GOUTPUT_3D(istart_sim,istart_in,numtim,IPSET)
   USE multiforce, ONLY: nspat1,nspat2                   ! spatial dimensions
   USE multiforce, ONLY: gForce_3d                       ! test only
   USE multiforce, only: NUMTIM                          ! number of data steps
+  USE multibands,ONLY:N_BANDS                           ! number of snow bands
 
   IMPLICIT NONE
 
@@ -118,6 +159,9 @@ SUBROUTINE PUT_GOUTPUT_3D(istart_sim,istart_in,numtim,IPSET)
   REAL(MSP), DIMENSION(:), ALLOCATABLE   :: tDat            ! time data
   REAL(SP), DIMENSION(:), ALLOCATABLE    :: time_steps_sub  ! time data
   INTEGER(I4B)                           :: IVAR_ID     ! variable ID
+
+  CHARACTER(LEN=500)                     :: swe_band    ! string of elevation band swe
+
   INCLUDE 'netcdf.inc'                                  ! use netCDF libraries
 
   ! open file
@@ -133,26 +177,60 @@ SUBROUTINE PUT_GOUTPUT_3D(istart_sim,istart_in,numtim,IPSET)
   ! loop through time-varying model output
   DO IVAR=1,NOUTVAR
 
-    ! check if there is a need to write the variable - see also def_output
     IF (Q_ONLY) THEN
-       WRITE_VAR=.FALSE.
-       IF (TRIM(VNAME(IVAR)).EQ.'ppt')      WRITE_VAR=.TRUE.
-       IF (TRIM(VNAME(IVAR)).EQ.'pet')      WRITE_VAR=.TRUE.
-       IF (TRIM(VNAME(IVAR)).EQ.'obsq')     WRITE_VAR=.TRUE.
-       IF (TRIM(VNAME(IVAR)).EQ.'evap_1')   WRITE_VAR=.TRUE.
-       IF (TRIM(VNAME(IVAR)).EQ.'evap_2')   WRITE_VAR=.TRUE.
-       IF (TRIM(VNAME(IVAR)).EQ.'q_instnt') WRITE_VAR=.TRUE.
-       IF (TRIM(VNAME(IVAR)).EQ.'q_routed') WRITE_VAR=.TRUE.
-       IF (TRIM(VNAME(IVAR)).EQ.'watr_1')   WRITE_VAR=.TRUE.
-       IF (TRIM(VNAME(IVAR)).EQ.'watr_2')   WRITE_VAR=.TRUE.
-       IF (TRIM(VNAME(IVAR)).EQ.'swe_tot')  WRITE_VAR=.TRUE.
-       !IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
-       !IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
-       !IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
-       !IF (TRIM(VNAME(IVAR)).EQ.'oflow_2') WRITE_VAR=.TRUE.
-       !IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
-       IF (.NOT.WRITE_VAR) CYCLE
+      WRITE_VAR=.FALSE.
+      IF (TRIM(VNAME(IVAR)).EQ.'ppt')      WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'obsq')     WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'pet')      WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'evap_1')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'evap_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'q_instnt') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'q_routed') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'watr_1')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'watr_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_1')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_1a')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_1b')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_1')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_2a')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_2b')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'swe_tot')  WRITE_VAR=.TRUE.
+      DO ISNW=1,N_BANDS
+        WRITE(TXT_ISNW,'(I2)') ISNW              ! convert band no. to text
+        IF (ISNW.LT.10) TXT_ISNW(1:1) = '0'      ! pad with zeros
+        swe_band = 'swe_z'//TXT_ISNW
+        IF (TRIM(VNAME(IVAR)).EQ. swe_band) WRITE_VAR=.TRUE.
+      END DO
+      !IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
+      !IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
+      !IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
+      !IF (TRIM(VNAME(IVAR)).EQ.'oflow_2') WRITE_VAR=.TRUE.
+      !IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
+      IF (.NOT.WRITE_VAR) CYCLE
     ENDIF
+
+!    ! check if there is a need to write the variable - see also def_output
+!    IF (Q_ONLY) THEN
+!       WRITE_VAR=.FALSE.
+!       IF (TRIM(VNAME(IVAR)).EQ.'ppt')      WRITE_VAR=.TRUE.
+!       IF (TRIM(VNAME(IVAR)).EQ.'pet')      WRITE_VAR=.TRUE.
+!       IF (TRIM(VNAME(IVAR)).EQ.'obsq')     WRITE_VAR=.TRUE.
+!       IF (TRIM(VNAME(IVAR)).EQ.'evap_1')   WRITE_VAR=.TRUE.
+!       IF (TRIM(VNAME(IVAR)).EQ.'evap_2')   WRITE_VAR=.TRUE.
+!       IF (TRIM(VNAME(IVAR)).EQ.'q_instnt') WRITE_VAR=.TRUE.
+1       IF (TRIM(VNAME(IVAR)).EQ.'q_routed') WRITE_VAR=.TRUE.
+!       IF (TRIM(VNAME(IVAR)).EQ.'watr_1')   WRITE_VAR=.TRUE.
+!       IF (TRIM(VNAME(IVAR)).EQ.'watr_2')   WRITE_VAR=.TRUE.
+!       IF (TRIM(VNAME(IVAR)).EQ.'swe_tot')  WRITE_VAR=.TRUE.
+!       !IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
+!       !IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
+!       !IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
+!       !IF (TRIM(VNAME(IVAR)).EQ.'oflow_2') WRITE_VAR=.TRUE.
+!       !IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
+!       IF (.NOT.WRITE_VAR) CYCLE
+!    ENDIF
 
     ! write the variable
     XVAR_3d = VAREXTRACT_3d(VNAME(IVAR),numtim)   ! get variable

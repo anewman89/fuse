@@ -30,6 +30,7 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
     USE multiforce, ONLY: numtim_sub_cur                     ! length of current subperiod
     USE multiforce, ONLY: sim_beg,sim_end                    ! timestep indices
     USE multiforce, ONLY: eval_beg,eval_end                  ! timestep indices
+    USE multiforce, only: timDat                             ! time data structure
 
     USE multiforce, ONLY:nspat1,nspat2                       ! spatial dimensions
     USE multiforce, ONLY:ncid_var                            ! NetCDF ID for forcing variables
@@ -45,7 +46,7 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
     USE set_all_module
 
     ! code modules
-    USE time_io, ONLY:get_modtim                   ! get model time for a given time step
+    USE time_io, ONLY:get_modtim                             ! get model time for a given time step
     USE get_gforce_module, ONLY:get_gforce                   ! get gridded forcing data for a given time step
     USE get_gforce_module, ONLY:get_gforce_3d                ! get gridded forcing data for a range of time steps
     USE getPETgrid_module, ONLY:getPETgrid                   ! get gridded PET
@@ -74,6 +75,11 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
     REAL(SP),INTENT(OUT)                   :: RMSE           ! root mean squared error
 
     ! internal
+    CHARACTER(LEN=5000)                    :: USER_STATE_FILE       ! user specified state file
+    CHARACTER(LEN=5000)                    :: OUTPUT_STATE_FILE     ! output state file
+    LOGICAL(lgt)                           :: INIT_FLAG             ! init with user specified file (.TRUE.) or default (.FALSE.)    
+    INTEGER(I4B)                           :: STATE_OUT             ! timestep to dump model state
+
     LOGICAL(lgt),PARAMETER                 :: computePET=.FALSE. ! flag to compute PET
     REAL(SP)                               :: T1,T2          ! CPU time
     !  INTEGER(I4B)                        :: ITIM           ! loop through time series
@@ -116,10 +122,17 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
     CALL PAR_DERIVE(ERR,MESSAGE)
     IF (ERR.NE.0) WRITE(*,*) TRIM(MESSAGE); IF (ERR.GT.0) STOP
 
+    !get user information about model state specification and output
+    CALL GET_USER_STATE_INFO('/glade/p/work/anewman/ff/islandpark/user_state/namelist.user_state',INIT_FLAG,USER_STATE_FILE,OUTPUT_STATE_FILE,STATE_OUT)
+
     ! initialize model states over the 2D gridded domain
     DO iSpat2=1,nSpat2
       DO iSpat1=1,nSpat1
-          CALL INIT_STATE(fracState0)             ! define FSTATE - fracState0 is shared in MODULE multistate
+          IF(INIT_FLAG) THEN
+            CALL INIT_USER_STATE(USER_STATE_FILE)
+          ELSE
+            CALL INIT_STATE(fracState0)             ! define FSTATE - fracState0 is shared in MODULE multistate         
+          END IF
           !gState(iSpat1,iSpat2) = FSTATE         ! put the state into the 2-d structure
           gState_3d(iSpat1,iSpat2,1) = FSTATE     ! put the state into the 3_d structure
        END DO
@@ -135,10 +148,16 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
       DO iSpat2=1,nSpat2
         DO iSpat1=1,nSpat1
          DO IBANDS=1,N_BANDS
-            MBANDS_VAR_4d(iSpat1,iSpat2,IBANDS,1)%SWE=0.0_sp            ! band snowpack water equivalent (mm)
+            IF(INIT_FLAG) THEN
+              MBANDS_VAR_4d(iSpat1,iSpat2,IBANDS,1)%SWE = MBANDS(IBANDS)%SWE    !band snowpack water equivalent (mm)
+            ELSE
+              MBANDS_VAR_4d(iSpat1,iSpat2,IBANDS,1)%SWE=0.0_sp            ! band snowpack water equivalent (mm)
+            END IF
             MBANDS_VAR_4d(iSpat1,iSpat2,IBANDS,1)%SNOWACCMLTN=0.0_sp ! new snow accumulation in band (mm day-1)
             MBANDS_VAR_4d(iSpat1,iSpat2,IBANDS,1)%SNOWMELT=0.0_sp    ! snowmelt in band (mm day-1)
             MBANDS_VAR_4d(iSpat1,iSpat2,IBANDS,1)%DSWE_DT=0.0_sp     ! rate of change of band SWE (mm day-1)
+            gState_3d(iSpat1,iSpat2,1)%SWE_TOT = SUM(MBANDS%SWE*MBANDS_INFO_3d(iSpat1,iSpat2,:)%AF) ! weighted average of SWE over all the elevation bands
+
           END DO
         END DO
       END DO
@@ -182,9 +201,15 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
       CALL get_modtim(itim_in,ncid_forc,ierr,message)
       IF(ierr/=0)THEN; PRINT*, TRIM(cmessage); STOP; ENDIF
 
+      ! if time step is equal to state dump, output state
+      IF(ITIM_IN .EQ. STATE_OUT) THEN
+        CALL OUTPUT_STATE(OUTPUT_STATE_FILE)
+      END IF
+
       ! compute potential ET
       IF(computePET) CALL getPETgrid(ierr,cmessage)
       IF(ierr/=0)THEN; PRINT*, TRIM(cmessage); STOP; ENDIF
+
 
       ! loop through grid points, and run the model for one time step
       DO iSpat2=1,nSpat2

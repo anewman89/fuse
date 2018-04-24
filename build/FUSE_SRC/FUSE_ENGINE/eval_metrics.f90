@@ -93,6 +93,9 @@ MODULE eval_metrics
     !only use complete intervals starting at the first timestep
     nintervals = nval/interval
 
+    !if nval less than interval, set nintervals to 1
+    if(nintervals .eq. 0) nintervals = 1
+
     !allocate space for output
     allocate(interval_maxes(nintervals),calibration_mask(nintervals),reset(nintervals))
 
@@ -103,6 +106,8 @@ MODULE eval_metrics
 
       !set end_position
       end_pos = start_pos + interval - 1
+      !if larger than nval, set to nval
+      if(end_pos .gt. nval) end_pos = nval
  
       interval_maxes(i) = maxval(timeseries(start_pos:end_pos))
       
@@ -202,15 +207,19 @@ MODULE eval_metrics
       std_dev_model = std_dev_model + (model(itime)-mean_model)**2
       std_dev_obs = std_dev_obs + (observation(itime)-mean_obs)**2
     enddo
-    std_dev_model = sqrt(std_dev_model/real(nval-1))
-    std_dev_obs   = sqrt(std_dev_obs/real(nval-1))
-    alpha = std_dev_model/std_dev_obs
+    if(nval .gt. 1) then
+      std_dev_model = sqrt(std_dev_model/real(nval-1))
+      std_dev_obs   = sqrt(std_dev_obs/real(nval-1))
+      alpha = std_dev_model/std_dev_obs
 
-    !Compute linear correlation coefficient
-    call pearson_corr(model,observation,linear_corr)
+      !Compute linear correlation coefficient
+      call pearson_corr(model,observation,linear_corr)
 
-    !compute KGE
-    kge = -( 1.0 - sqrt((linear_corr-1.0)**2 + 5*(alpha-1.0)**2 + (beta-1.0)**2) )
+      !compute KGE
+      kge = -( 1.0 - sqrt((linear_corr-1.0)**2 + 5*(alpha-1.0)**2 + (beta-1.0)**2) )
+    else
+      kge = -( 1.0 - sqrt((beta-1.0)**2) )
+    end if
 
     return
   end subroutine

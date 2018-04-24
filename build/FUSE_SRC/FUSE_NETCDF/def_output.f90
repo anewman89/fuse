@@ -15,10 +15,10 @@ SUBROUTINE DEF_OUTPUT(nSpat1,nSpat2,NPSET,NTIM)
   USE metaoutput                                        ! metadata for all model variables
   USE multiforce, only: latitude,longitude              ! dimension arrays
   USE multiforce, only: name_psets,time_steps           ! dimension arrays
-
   USE multiforce, only: latUnits,lonUnits               ! units string
   USE multiforce, only: timeUnits                       ! units string
   USE multistate, only: ncid_out                        ! NetCDF output file ID
+  USE multibands,ONLY:N_BANDS                           ! number of snow bands
 
   IMPLICIT NONE
 
@@ -48,6 +48,10 @@ SUBROUTINE DEF_OUTPUT(nSpat1,nSpat2,NPSET,NTIM)
   INTEGER(I4B),parameter                 :: TDIMS=2       ! char position dimension id
   INTEGER(I4B)                           :: TXDIMS(TDIMS) ! variable shape
   INTEGER(I4B)                           :: TSTART(TDIMS), TCOUNT(TDIMS)
+
+!  INTEGER(I4B)                           :: ISNW        ! loop through SWE states
+!  CHARACTER(LEN=2)                       :: TXT_ISNW    ! band index as a character
+  CHARACTER(LEN=500)                     :: swe_band    ! string of elevation band swe
 
   include 'netcdf.inc'                                  ! use netCDF libraries
 
@@ -100,7 +104,21 @@ SUBROUTINE DEF_OUTPUT(nSpat1,nSpat2,NPSET,NTIM)
       IF (TRIM(VNAME(IVAR)).EQ.'q_routed') WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'watr_1')   WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'watr_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_1')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_1a')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_1b')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_1')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'tens_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_2')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_2a')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'free_2b')   WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'swe_tot')  WRITE_VAR=.TRUE.
+      DO ISNW=1,N_BANDS
+        WRITE(TXT_ISNW,'(I2)') ISNW              ! convert band no. to text
+        IF (ISNW.LT.10) TXT_ISNW(1:1) = '0'      ! pad with zeros
+        swe_band = 'swe_z'//TXT_ISNW
+        IF (TRIM(VNAME(IVAR)).EQ. swe_band) WRITE_VAR=.TRUE.
+      END DO
       !IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
       !IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
       !IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
@@ -108,6 +126,7 @@ SUBROUTINE DEF_OUTPUT(nSpat1,nSpat2,NPSET,NTIM)
       !IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
       IF (.NOT.WRITE_VAR) CYCLE
     ENDIF
+
 
     ! write the variable
     IERR = NF_DEF_VAR(ncid_out,TRIM(VNAME(IVAR)),NF_REAL,4,TVAR,IVAR_ID); CALL HANDLE_ERR(IERR)
