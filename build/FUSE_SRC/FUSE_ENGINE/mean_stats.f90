@@ -94,6 +94,7 @@ QSIM_AVAIL=PACK(QSIM,QOBS_MASK,QSIM_AVAIL)  ! moves QSIM time steps indicated by
 										                      	! should be a copy of QSIM
 
 !simple moving average (SMA) of flows
+!input flow,window size(days),output flow
 call simple_moving_average(QOBS_AVAIL,3,QOBS_SMA)
 call simple_moving_average(QSIM_AVAIL,3,QSIM_SMA)
 
@@ -116,18 +117,20 @@ SS_SIM  = DOT_PRODUCT(DSIM,DSIM)  ! = SUM( DSIM(:)*DSIM(:) )
 ! compute the sum of squares of lagged differences
 SS_LOBS = DOT_PRODUCT(DOBS(2:NUM_AVAIL),DOBS(1:NUM_AVAIL-1))
 SS_LSIM = DOT_PRODUCT(DSIM(2:NUM_AVAIL),DSIM(1:NUM_AVAIL-1))
+
 ! compute sum of squared differences between model and observations
+!original raw flow
 !RAWD(:) = QSIM_AVAIL(:) - QOBS_AVAIL(:)
+
 !using averaged flow (SMA)
 !RAWD(:) = QSIM_SMA(:) - QOBS_SMA(:)
 
+!!!!!!
 !using interval maximum values
+!!!!!!
 deallocate(rawd)
 allocate(rawd(size(qsim_int_max)))
 RAWD(:) = QSIM_INT_MAX(:) - QOBS_INT_MAX(:)
-!print *,'interval max values: '
-!print *, 'model: ', qsim_int_max
-!print *, 'obs: ', qobs_int_max
 
 LOGD(:) = LOG(QSIM_AVAIL(:)+NO_ZERO) - LOG(QOBS_AVAIL(:)+NO_ZERO)
 
@@ -147,7 +150,9 @@ MSTATS%QSIM_CVAR = SQRT( SS_SIM / REAL(NUM_AVAIL-1, KIND(SP)) ) / (XB_SIM+NO_ZER
 ! compute the lag-1 correlation coefficient
 MSTATS%QOBS_LAG1 = SS_LOBS / (SQRT(SS_OBS*SS_OBS)+NO_ZERO)
 MSTATS%QSIM_LAG1 = SS_LSIM / (SQRT(SS_SIM*SS_SIM)+NO_ZERO)
+
 ! compute the root-mean-squared-error of flow
+!for raw flow timeseries
 !MSTATS%RAW_RMSE  = SQRT( SS_RAW / REAL(NUM_AVAIL, KIND(SP)) )
 
 !for interval maxes
