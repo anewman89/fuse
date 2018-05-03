@@ -23,7 +23,7 @@ INTEGER(I4B)                           :: IERR        ! error code for allocate/
 INTEGER(I4B)                           :: ERR         ! error code for fuse_rmse
 CHARACTER(LEN=256)                     :: MESSAGE     ! error message for fuse_rmse
 LOGICAL(LGT)                           :: OUTPUT_FLAG ! .TRUE. = write model time series
-REAL(SP)                               :: RMSE        ! root mean squared error
+REAL(SP)                               :: FUNC_VAL    ! obj function value
 LOGICAL(LGT)                           :: DISTRIBUTED ! TRUE. if doing distributed simulations
 
 ! output
@@ -37,13 +37,13 @@ SCE_PAR(1:NOPT) = A(1:NOPT)  ! convert from MSP used in SCE to SP used in FUSE
 DISTRIBUTED=.TRUE.
 OUTPUT_FLAG=.FALSE.   ! do not produce *runs.nc files only, param.nc files
 
-CALL FUSE_RMSE(SCE_PAR,DISTRIBUTED,NCID_FORC,RMSE,OUTPUT_FLAG,1)
+CALL FUSE_RMSE(SCE_PAR,DISTRIBUTED,NCID_FORC,FUNC_VAL,OUTPUT_FLAG,1)
 
 ! deallocate parameter set
 DEALLOCATE(SCE_PAR, STAT=IERR); IF (IERR.NE.0) STOP ' problem deallocating space '
-print *, 'RMSE =', RMSE
+print *, 'FUNC_VAL =', FUNC_VAL
 
 ! save objective function value
-FUNCTN = RMSE
+FUNCTN = FUNC_VAL
 ! ---------------------------------------------------------------------------------------
 END FUNCTION FUNCTN

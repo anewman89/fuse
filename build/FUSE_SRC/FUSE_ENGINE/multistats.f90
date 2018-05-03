@@ -15,6 +15,10 @@ MODULE multistats
   REAL(SP)                             :: RAW_RMSE      ! root-mean-squared-error of flow (mm day-1)
   REAL(SP)                             :: LOG_RMSE      ! root-mean-squared-error of LOG flow (mm day-1)
   REAL(SP)                             :: NASH_SUTT     ! Nash-Sutcliffe score
+  REAL(SP)                             :: KGE           ! KGE score with user specified component weights
+  REAL(SP)                             :: RMSE_INT      ! root-mean-squared-error of LOG flow (mm day-1) using timerseries of max values over specified interval (e.g. yearly max flows)
+  REAL(SP)                             :: KGE_INT       ! KGE score with user specified component weights using timerseries of max values over specified interval (e.g. yearly max flows)
+  REAL(SP)                             :: OBJ_FUNC      ! value used in optimzation routine (e.g. rmse, kge, nse, etc.)
   ! attributes of model output
   REAL(SP)                             :: NUM_RMSE      ! error of the approximate solution
   REAL(SP)                             :: NUM_FUNCS     ! number of function calls

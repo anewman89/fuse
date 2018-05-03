@@ -118,10 +118,10 @@ INTEGER(I4B)                           :: IERR        ! error code
 INTEGER(I4B)                           :: NCID        ! NetCDF file ID
 INTEGER(I4B)                           :: IDIMID      ! NetCDF dimension ID
 INTEGER(I4B)                           :: IVARID      ! NetCDF variable ID
-INTEGER(I4B)                           :: I_RAW_RMSE  ! NetCDF RMSE ID
+INTEGER(I4B)                           :: I_OBJ_FUNC  ! NetCDF OBJ_FUNC ID
 INTEGER(I4B), DIMENSION(1)             :: I_OPT_PARA  ! index of the optimum parameter set (e.g. lowest RSME) - MUST BE DIMENSIONED
-REAL(DP), DIMENSION(:),ALLOCATABLE     :: RAW_RMSE    ! RMSE for each parameter set
-REAL(DP), DIMENSION(1)                 :: LOWEST_RAW_RMSE    ! LOWEST RAW RMSE
+REAL(DP), DIMENSION(:),ALLOCATABLE     :: OBJ_FUNC    ! objective function for each parameter set
+REAL(DP), DIMENSION(1)                 :: LOWEST_OBJ_FUNC    ! LOWEST objective function
 INTEGER(I4B)                           :: IPAR        ! loop through model parameters
 INTEGER(I4B)                           :: NPAR        ! number of parameter sets in output file
 REAL(DP)                               :: APAR        ! parameter value (single precision)
@@ -152,17 +152,17 @@ IERR = NF_OPEN(TRIM(NETCDF_FILE),NF_NOWRITE,NCID); CALL HANDLE_ERR(IERR)
  ! extract RMSE for each parameter set
  print *, 'Length of the par dimension (the number of parameter sets produced by SCE is lower)', NPAR
 
- ALLOCATE(RAW_RMSE(NPAR),STAT=IERR); IF(IERR.NE.0) STOP ' problem allocating space for RAW_RMSE '
+ ALLOCATE(OBJ_FUNC(NPAR),STAT=IERR); IF(IERR.NE.0) STOP ' problem allocating space for OBJ_FUNC '
 
- IERR = NF_INQ_VARID(NCID,'raw_rmse',I_RAW_RMSE); CALL HANDLE_ERR(IERR)
- IERR = NF_GET_VAR_DOUBLE(NCID,I_RAW_RMSE,RAW_RMSE); CALL HANDLE_ERR(IERR)
+ IERR = NF_INQ_VARID(NCID,'obj_func',I_OBJ_FUNC); CALL HANDLE_ERR(IERR)
+ IERR = NF_GET_VAR_DOUBLE(NCID,I_OBJ_FUNC,OBJ_FUNC); CALL HANDLE_ERR(IERR)
 
- I_OPT_PARA = MINLOC(RAW_RMSE,DIM=1) !TODO: use argument MASK to find best parameter set for each of the SCE run
- LOWEST_RAW_RMSE=RAW_RMSE(I_OPT_PARA)
- print *, 'Index of parameter set with lowest RMSE =',I_OPT_PARA
- print *, 'Lowest RMSE =',LOWEST_RAW_RMSE
+ I_OPT_PARA = MINLOC(OBJ_FUNC,DIM=1) !TODO: use argument MASK to find best parameter set for each of the SCE run
+ LOWEST_OBJ_FUNC=OBJ_FUNC(I_OPT_PARA)
+ print *, 'Index of parameter set with lowest OBJ_FUNC =',I_OPT_PARA
+ print *, 'Lowest RMSE =',LOWEST_OBJ_FUNC
 
- DEALLOCATE(RAW_RMSE,STAT=IERR); IF (IERR.NE.0) STOP ' problem deallocating ATIME/TDATA '
+ DEALLOCATE(OBJ_FUNC,STAT=IERR); IF (IERR.NE.0) STOP ' problem deallocating ATIME/TDATA '
 
  PRINT *, 'Reading from NetCDF file parameter values for best parameter set:'
 

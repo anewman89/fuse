@@ -1,7 +1,7 @@
 MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
   IMPLICIT NONE
   CONTAINS
-  SUBROUTINE FUSE_RMSE(XPAR,DISTRIBUTED,NCID_FORC,RMSE,OUTPUT_FLAG,IPSET,MPARAM_FLAG)
+  SUBROUTINE FUSE_RMSE(XPAR,DISTRIBUTED,NCID_FORC,FUNC_VAL,OUTPUT_FLAG,IPSET,MPARAM_FLAG)
 
     ! ---------------------------------------------------------------------------------------
     ! Creator:
@@ -44,9 +44,12 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
     USE multi_flux                                           ! model fluxes
     USE multibands                                           ! elevation bands for snow modeling
     USE set_all_module
+    USE fuse_fileManager, ONLY:SETNGS_PATH                   ! path to namelist file for state restart
+    USE fuse_fileManager, ONLY:STATE_NMLIST                  ! namelist file for state restart 
 
     ! code modules
     USE time_io, ONLY:get_modtim                             ! get model time for a given time step
+    USE time_io, ONLY:date_extractor                         ! extract date integers from string variable
     USE get_gforce_module, ONLY:get_gforce                   ! get gridded forcing data for a given time step
     USE get_gforce_module, ONLY:get_gforce_3d                ! get gridded forcing data for a range of time steps
     USE getPETgrid_module, ONLY:getPETgrid                   ! get gridded PET
@@ -56,6 +59,12 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
 
     ! interface blocks
     USE interfaceb, ONLY:ode_int,fuse_solve                  ! provide access to FUSE_SOLVE through ODE_INT
+
+    !calibration control
+    USE calib_control, only: calib_type,calib_metric         ! calibration type (daily, max over interval) and metric (rmse, kge)
+
+    !state control
+    USE user_state                                           ! control of state initialization/output from namelist
 
     ! model numerix structures
     USE model_numerix
@@ -72,13 +81,15 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
     LOGICAL(LGT), INTENT(IN), OPTIONAL     :: MPARAM_FLAG    ! .FALSE. (used to turn off writing statistics)
 
     ! output
-    REAL(SP),INTENT(OUT)                   :: RMSE           ! root mean squared error
+    REAL(SP),INTENT(OUT)                   :: FUNC_VAL           ! value of objective function for optimization
 
     ! internal
-    CHARACTER(LEN=5000)                    :: USER_STATE_FILE       ! user specified state file
-    CHARACTER(LEN=5000)                    :: OUTPUT_STATE_FILE     ! output state file
-    LOGICAL(lgt)                           :: INIT_FLAG             ! init with user specified file (.TRUE.) or default (.FALSE.)    
-    INTEGER(I4B)                           :: STATE_OUT             ! timestep to dump model state
+!    CHARACTER(LEN=2000)                    :: INPUT_STATE_FILE       ! user specified state file
+!    CHARACTER(LEN=2000)                    :: OUTPUT_STATE_FILE     ! output state file
+    CHARACTER(LEN=2000)                    :: state_file            ! full filepath to state namelist
+!    CHARACTER(LEN=100)                     :: STATE_OUT_DATE        ! date of user specified state output
+!    LOGICAL(lgt)                           :: INIT_FLAG             ! init with user specified file (.TRUE.) or default (.FALSE.)    
+!    LOGICAL(lgt)                           :: STATE_OUT             ! flag to dump model state
 
     LOGICAL(lgt),PARAMETER                 :: computePET=.FALSE. ! flag to compute PET
     REAL(SP)                               :: T1,T2          ! CPU time
@@ -86,6 +97,8 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
     INTEGER(I4B)                           :: iSpat1,iSpat2  ! loop through spatial dimensions
     INTEGER(I4B)                           :: ibands         ! loop through elevation bands
     INTEGER(I4B)                           :: IPAR           ! loop through model parameters
+    INTEGER(I4B)                           :: YEAR,MNTH      ! time variables
+    INTEGER(I4B)                           :: DAY,HOUR       ! time variables
     REAL(SP)                               :: DT_SUB         ! length of sub-step
     REAL(SP)                               :: DT_FULL        ! length of time step
     REAL(SP), DIMENSION(:), ALLOCATABLE    :: STATE0         ! vector of model states at the start of the time step
@@ -123,13 +136,14 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
     IF (ERR.NE.0) WRITE(*,*) TRIM(MESSAGE); IF (ERR.GT.0) STOP
 
     !get user information about model state specification and output
-    CALL GET_USER_STATE_INFO('/glade/p/work/anewman/ff/islandpark/user_state/namelist.user_state',INIT_FLAG,USER_STATE_FILE,OUTPUT_STATE_FILE,STATE_OUT)
+    state_file = trim(setngs_path)//trim(state_nmlist)
+    CALL GET_USER_STATE_INFO(state_file)
 
     ! initialize model states over the 2D gridded domain
     DO iSpat2=1,nSpat2
       DO iSpat1=1,nSpat1
           IF(INIT_FLAG) THEN
-            CALL INIT_USER_STATE(USER_STATE_FILE)
+            CALL INIT_USER_STATE(INPUT_STATE_FILE)
           ELSE
             CALL INIT_STATE(fracState0)             ! define FSTATE - fracState0 is shared in MODULE multistate         
           END IF
@@ -201,8 +215,12 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
       CALL get_modtim(itim_in,ncid_forc,ierr,message)
       IF(ierr/=0)THEN; PRINT*, TRIM(cmessage); STOP; ENDIF
 
-      ! if time step is equal to state dump, output state
-      IF(ITIM_IN .EQ. STATE_OUT) THEN
+      ! if model time is equal to user specified output state date, dump state
+      call date_extractor(STATE_OUT_DATE,YEAR,MNTH,DAY,HOUR)
+
+      IF(STATE_OUT .eq. .TRUE. .AND. timdat%IY .EQ. YEAR .AND. timdat%IM .EQ. MNTH .AND.  &
+               timdat%ID .EQ. DAY  .AND. timdat%IH .EQ. HOUR) THEN
+!print *, STATE_OUT, timdat%IY,timdat%IM,timdat%ID,timdat%IH,YEAR,MNTH,DAY,HOUR
         CALL OUTPUT_STATE(OUTPUT_STATE_FILE)
       END IF
 
@@ -362,8 +380,25 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
 
       ! calculate mean summary statistics
       CALL MEAN_STATS()
-      RMSE = MSTATS%RAW_RMSE
-      PRINT *, 'RMSE = ', RMSE
+
+      !place user selected metric into FUNC_VAL
+      if(trim(calib_type) == "daily" .or. trim(calib_type) == "DAILY") then
+        if(trim(calib_metric) == "RMSE" .or. trim(calib_metric) == "rmse") then
+          FUNC_VAL = MSTATS%RAW_RMSE
+        elseif(trim(calib_metric) == "KGE" .or. trim(calib_metric) == "kge") then
+          FUNC_VAL = -MSTATS%KGE      !negative KGE for minimization of objective function
+        endif
+      elseif(trim(calib_type) == "INTERVAL" .or. trim(calib_type) == "interval") then
+        if(trim(calib_metric) == "RMSE" .or. trim(calib_metric) == "rmse") then
+          FUNC_VAL = MSTATS%RMSE_INT
+        elseif(trim(calib_metric) == "KGE" .or. trim(calib_metric) == "kge") then
+          FUNC_VAL = -MSTATS%KGE_INT  !negative KGE for minimization of objective function
+        endif
+      endif
+      PRINT *, 'FUNC_VAL = ', FUNC_VAL
+
+      !set generic output obj_func variable
+      MSTATS%OBJ_FUNC = FUNC_VAL
 
       PRINT *, 'Writing parameter values...'
       CALL PUT_PARAMS(PCOUNT)

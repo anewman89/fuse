@@ -23,6 +23,8 @@ CHARACTER(LEN=fusePathLen)  :: FORCINGINFO       ! info on forcing data files
 CHARACTER(LEN=fusePathLen)  :: MBANDS_INFO       ! info on basin band data files
 CHARACTER(LEN=fusePathLen)  :: MBANDS_NC         ! info on basin band data files on a grid
 CHARACTER(LEN=fusePathLen)  :: BATEA_PARAM       ! definition of BATEA parameters
+CHARACTER(LEN=fusePathLen)  :: STATE_NMLIST      ! definition of state input/output decisions
+CHARACTER(LEN=fusePathLen)  :: CALIB_NMLIST      ! definition of SCE control parameters
 ! define simulation and evaluation periods required in FUSE_FILEMANAGER_V1.2
 CHARACTER(len=20)           :: date_start_sim    ! date start simulation
 CHARACTER(len=20)           :: date_end_sim      ! date end simulation
@@ -135,6 +137,8 @@ read(unt,*)M_DECISIONS
 read(unt,*)CONSTRAINTS
 read(unt,*)MOD_NUMERIX
 read(unt,*)BATEA_PARAM
+read(unt,*)CALIB_NMLIST
+read(unt,*)STATE_NMLIST
 read(unt,'(a)')temp
 read(unt,*)date_start_sim
 read(unt,*)date_end_sim

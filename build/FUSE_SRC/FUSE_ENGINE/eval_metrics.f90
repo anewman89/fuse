@@ -13,7 +13,7 @@ MODULE eval_metrics
   ! ---------------------------------------------------------------------------------------
 
 
-  SUBROUTINE simple_moving_average(timeseries,windowSize,average_timeseries)
+  SUBROUTINE simple_moving_average(windowSize,timeseries)
     ! ---------------------------------------------------------------------------------------
     ! Creator:
     ! --------
@@ -23,7 +23,7 @@ MODULE eval_metrics
     ! --------
     ! Calculate the simple moving average of a timeseries
     !   input: some timeseries of values
-    !  output: root mean squared error
+    !  output: averaged timeseries of values
     ! ---------------------------------------------------------------------------------------
 
     USE nrtype                                               ! variable types, etc.
@@ -31,21 +31,21 @@ MODULE eval_metrics
     IMPLICIT NONE
     
     !input
-    REAL(SP),DIMENSION(:),INTENT(IN)       :: timeseries           ! input timeseries
     INTEGER(I4B),INTENT(IN)                :: windowSize           ! length of window to average over
+    REAL(SP),DIMENSION(:),INTENT(INOUT)    :: timeseries           ! input timeseries
     
-    !output
-    REAL(SP),DIMENSION(:),INTENT(OUT)      :: average_timeseries   ! output averaged timeseries
-
     !local variables
     INTEGER(I4B)                          :: i                     ! looping variable
     INTEGER(I4B)                          :: nval                  ! length of timeseries
-
+    REAL(SP),DIMENSION(:),ALLOCATABLE     :: average_timeseries    ! average timeseries
 
     !code below
 
     !define number of values
     nval = size(timeseries,1)
+
+    !allocate local average timeseries
+    allocate(average_timeseries(nval))
 
     !loop through raw timeseries, create average series using windowSize
     do i = 1,nval
@@ -55,6 +55,8 @@ MODULE eval_metrics
         average_timeseries(i) = sum(timeseries(i-windowSize+1:i))/real(windowSize)
       endif
     enddo
+
+    timeseries = average_timeseries
 
   END SUBROUTINE simple_moving_average
 
@@ -115,38 +117,39 @@ MODULE eval_metrics
       start_pos = end_pos + 1
     enddo
 
-    !identify top N values
-    !initialize variables
-    cal_intervals = 10
-    calibration_mask = 0
-    reset = 0
-    min_value = 0
+!    !identify top N values
+!    !initialize variables
+!    cal_intervals = 10
+!    calibration_mask = 0
+!    reset = 0
+!    min_value = 0
+!
+!    !loop through array and identifiy N values
+!    do i = 1,nintervals
+!      !if current value is larger than minimum
+!      if(interval_maxes(i) > min_value) then
+!
+!        !if we have less than cal_intervals values, set mask
+!        if(i .lt. cal_intervals-1) then
+!          calibration_mask(i) = 1
+!        else if(i .eq. cal_intervals) then
+!          calibration_mask(i) = 1
+!          min_value = minval(interval_maxes,calibration_mask==1)
+!          where(interval_maxes .EQ. min_value) reset = 1
+!          where(reset .EQ. 1) calibration_mask = 0
+!          reset = 0
+!        else                           !if more than 10, change mask to new value location
+!          calibration_mask(i) = 1
+!          where(interval_maxes .EQ. min_value) reset = 1
+!          where(reset .EQ. 1) calibration_mask = 0
+!          reset = 0
+!          min_value = minval(interval_maxes,calibration_mask==1)
+!        endif !end if check
+!
+!      endif   !end min_value if statement
+!    enddo
 
-    !loop through array and identifiy N values
-    do i = 1,nintervals
-      !if current value is larger than minimum
-      if(interval_maxes(i) > min_value) then
-
-        !if we have less than cal_intervals values, set mask
-        if(i .lt. cal_intervals-1) then
-          calibration_mask(i) = 1
-        else if(i .eq. cal_intervals) then
-          calibration_mask(i) = 1
-          min_value = minval(interval_maxes,calibration_mask==1)
-          where(interval_maxes .EQ. min_value) reset = 1
-          where(reset .EQ. 1) calibration_mask = 0
-          reset = 0
-        else                           !if more than 10, change mask to new value location
-          calibration_mask(i) = 1
-          where(interval_maxes .EQ. min_value) reset = 1
-          where(reset .EQ. 1) calibration_mask = 0
-          reset = 0
-          min_value = minval(interval_maxes,calibration_mask==1)
-        endif !end 
-
-      endif   !end min_value if statement
-    enddo
-
+!    print *,'number intervals ',nintervals,nval,timeseries(1:10),interval
 !    print *,'intervals ',interval_maxes
 !    print *,'mask ',calibration_mask
 
@@ -166,7 +169,8 @@ MODULE eval_metrics
     !  output: KGE
     ! ---------------------------------------------------------------------------------------
 
-    USE nrtype                                               ! variable types, etc.
+    USE nrtype                                                          ! variable types, etc.
+    USE calib_control,only: kge_a_corr, kge_a_alpha, kge_a_beta         ! prefactors to control weights of component terms of kge
 
     implicit none
 
@@ -216,9 +220,9 @@ MODULE eval_metrics
       call pearson_corr(model,observation,linear_corr)
 
       !compute KGE
-      kge = -( 1.0 - sqrt((linear_corr-1.0)**2 + 5*(alpha-1.0)**2 + (beta-1.0)**2) )
+      kge = 1.0 - sqrt(kge_a_corr*(linear_corr-1.0)**2 + kge_a_alpha*(alpha-1.0)**2 + kge_a_beta*(beta-1.0)**2)
     else
-      kge = -( 1.0 - sqrt((beta-1.0)**2) )
+      kge = 1.0 - sqrt((beta-1.0)**2)
     end if
 
     return

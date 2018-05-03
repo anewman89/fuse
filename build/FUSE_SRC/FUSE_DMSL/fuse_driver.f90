@@ -63,6 +63,11 @@ USE get_mbands_module,only:get_mbands, GET_MBANDS_INFO    ! get elevation bands 
 USE get_fparam_module                                     ! get SCE parameters from NetCDF file
 USE time_io
 
+! module with calibration parameters for SCE
+USE calib_control, only:maxn,kstop,pcento,ngs,mings       ! SCE control parameters
+USE calib_control, only:iniflg,iprint,iseed               ! SCE control parameters
+USE calib_control, only:read_calib_control                ! get calibration control information 
+ 
 ! model numerix
 USE model_numerix                                         ! defines decisions on model numerix
 
@@ -126,7 +131,7 @@ TYPE(PARATT)                           :: PARAM_META ! parameter metadata (model
 REAL(SP), DIMENSION(:), ALLOCATABLE    :: BL      ! vector of lower parameter bounds
 REAL(SP), DIMENSION(:), ALLOCATABLE    :: BU      ! vector of upper parameter bounds
 REAL(SP), DIMENSION(:), ALLOCATABLE    :: APAR    ! model parameter set
-INTEGER(KIND=4)                        :: ISEED   ! seed for the random sequence
+!INTEGER(KIND=4)                        :: ISEED   ! seed for the random sequence
 REAL(KIND=4),DIMENSION(:), ALLOCATABLE :: URAND   ! vector of quasi-random numbers U[0,1]
 REAL(SP)                               :: RMSE    ! error from the simulation
 
@@ -139,17 +144,17 @@ REAL(MSP), DIMENSION(:), ALLOCATABLE   :: BL_MSP    ! ! lower bound of model par
 REAL(MSP), DIMENSION(:), ALLOCATABLE   :: BU_MSP    ! ! upper bound of model parameters
 REAL(MSP), DIMENSION(:), ALLOCATABLE   :: URAND_MSP   ! vector of quasi-random numbers U[0,1]
 INTEGER(I4B)                           :: NOPT    ! number of parameters to be optimized
-INTEGER(I4B)                           :: KSTOP   ! number of shuffling loops the value must change by PCENTO
-INTEGER(I4B)                           :: MAXN    ! maximum number of trials before optimization is terminated
-REAL(MSP)                              :: PCENTO  ! the percentage
+!INTEGER(I4B)                           :: KSTOP   ! number of shuffling loops the value must change by PCENTO
+!INTEGER(I4B)                           :: MAXN    ! maximum number of trials before optimization is terminated
+!REAL(MSP)                              :: PCENTO  ! the percentage
 CHARACTER(LEN=3)                       :: CSEED   ! starting seed converted to a character
-INTEGER(I4B)                           :: NGS     ! # complexes in the initial population
+!INTEGER(I4B)                           :: NGS     ! # complexes in the initial population
 INTEGER(I4B)                           :: NPG     ! # points in each complex
 INTEGER(I4B)                           :: NPS     ! # points in a sub-complex
 INTEGER(I4B)                           :: NSPL    ! # evolution steps allowed for each complex before shuffling
-INTEGER(I4B)                           :: MINGS   ! minimum number of complexes required
-INTEGER(I4B)                           :: INIFLG  ! 1 = include initial point in the population
-INTEGER(I4B)                           :: IPRINT  ! 0 = supress printing
+!INTEGER(I4B)                           :: MINGS   ! minimum number of complexes required
+!INTEGER(I4B)                           :: INIFLG  ! 1 = include initial point in the population
+!INTEGER(I4B)                           :: IPRINT  ! 0 = supress printing
 INTEGER(I4B)                           :: ISCE    ! unit number for SCE write
 REAL(MSP)                              :: FUNCTN  ! function name for the model run
 
@@ -359,6 +364,9 @@ IF (ERR.NE.0) WRITE(*,*) TRIM(MESSAGE); IF (ERR.GT.0) STOP
 ONEMOD=1                 ! one file per model (i.e., model dimension = 1)
 PCOUNT=0                 ! counter for parameter sets evaluated (shared in MODULE multistats)
 
+! Read calibration control parameters
+CALL READ_CALIB_CONTROL()
+
 IF(fuse_mode == 'run_def')THEN ! run FUSE with default parameter values
 
   ! files to which model run and parameter set will be saved
@@ -410,19 +418,19 @@ ELSE IF(fuse_mode == 'calib_sce')THEN ! calibrate FUSE using SCE
   FNAME_NETCDF_RUNS = TRIM(OUTPUT_PATH)//TRIM(dom_id)//'_'//TRIM(FMODEL_ID)//'_runs_sce.nc'
   FNAME_NETCDF_PARA = TRIM(OUTPUT_PATH)//TRIM(dom_id)//'_'//TRIM(FMODEL_ID)//'_para_sce.nc'
 
-  ! assign algorithmic control parameters for SCE
+  ! assign remaining algorithmic control parameters for SCE
   NOPT   =  NUMPAR         ! number of parameters to be optimized (NUMPAR in module multiparam)
-  MAXN   =  20000          ! maximum number of trials before optimization is terminated
-  KSTOP  =      3          ! number of shuffling loops the value must change by PCENTO (MAX=9)
-  PCENTO =      0.001      ! the percentage
-  NGS    =     15          ! number of complexes in the initial population
+!  MAXN   =  20000          ! maximum number of trials before optimization is terminated
+!  KSTOP  =  KSTOP_IN       ! number of shuffling loops the value must change by PCENTO (MAX=9)
+!  PCENTO =  PCENTO_IN      ! the percentage
+!  NGS    =  NGS_IN         ! number of complexes in the initial population
   NPG    =  2*NOPT + 1     ! number of points in each complex
   NPS    =    NOPT + 1     ! number of points in a sub-complex
   NSPL   =  2*NOPT + 1     ! number of evolution steps allowed for each complex before shuffling
-  MINGS  =  NGS            ! minimum number of complexes required
-  INIFLG =  1              ! 1 = include initial point in the population
-  IPRINT =  1              ! 0 = supress printing
-  ISEED  = 44              ! integer used in start of initial random SCE parameter value draw
+!  MINGS  =  MINGS_IN       ! minimum number of complexes required
+!  INIFLG =  INIFLG_IN      ! 1 = include initial point in the population
+!  IPRINT =  IPRINT_IN      ! 0 = supress printing
+!  ISEED  = ISEED_IN        ! integer used in start of initial random SCE parameter value draw
   NUMPSET=1.2*MAXN         ! will be used to define the parameter set dimension of the NetCDF files
                            ! using 1.2MAXN since the final number of parameter sets produced by SCE is unknown
 

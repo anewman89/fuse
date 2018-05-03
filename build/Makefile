@@ -46,6 +46,7 @@ NRUTIL = $(patsubst %, $(NUMREC_DIR)/%, $(FUSE_NRUTIL))
 
 # Data modules
 FUSE_DATAMS=    \
+	calib_control.f90 \
         model_defn.f90 \
 	model_defnames.f90 \
 	multiconst.f90 \
@@ -88,6 +89,7 @@ FUSE_NR_SUB= \
 NR_SUB = $(patsubst %, $(NUMREC_DIR)/%, $(FUSE_NR_SUB))
 
 # Model guts
+
 FUSE_MODGUT=\
 	mod_derivs.f90 \
 	update_swe.f90 \
@@ -136,7 +138,7 @@ FUSE_PRELIM= \
 	qtimedelay.f90 \
 	init_stats.f90 \
 	init_state.f90 \
-	get_user_state_info.f90 \
+	user_state.f90 \
 	init_user_state.f90 \
 	output_state.f90
 PRELIM = $(patsubst %, $(ENGINE_DIR)/%, $(FUSE_PRELIM))

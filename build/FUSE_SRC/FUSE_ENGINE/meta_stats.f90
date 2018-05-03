@@ -19,6 +19,7 @@ INTEGER(I4B)                           :: NSUMVAR     ! number of summary variab
 CONTAINS
 ! ---------------------------------------------------------------------------------------
 SUBROUTINE SUMDESCRIBE()
+USE calib_control, only: obj_func_desc,obj_func_unit         !description and units for objective function
 I=0  ! initialize counter
 ! DMSL diagnostix
 I=I+1; XNAME(I)='var_residul'; XDESC(I)='variance of the model residuals, used in MCMC      '; XUNIT(I)='mm**2        '
@@ -34,6 +35,10 @@ I=I+1; XNAME(I)='qsim_lag1  '; XDESC(I)='lag-1 correlation of simulated runoff  
 I=I+1; XNAME(I)='raw_rmse   '; XDESC(I)='root-mean-squared-error of flow                    '; XUNIT(I)='mm timestep-1'
 I=I+1; XNAME(I)='log_rmse   '; XDESC(I)='root-mean-squared-error of LOG flow                '; XUNIT(I)='mm timestep-1'
 I=I+1; XNAME(I)='nash_sutt  '; XDESC(I)='Nash-Sutcliffe score                               '; XUNIT(I)='-            '
+I=I+1; XNAME(I)='kge        '; XDESC(I)='Kling-Gupta score                                  '; XUNIT(I)='-            '
+I=I+1; XNAME(I)='rmse_int   '; XDESC(I)='root-mean-squared-error of interval maximums       '; XUNIT(I)='mm interval-1'
+I=I+1; XNAME(I)='kge_int    '; XDESC(I)='Kling-Gupta score using interval maximums          '; XUNIT(I)='-            '
+I=I+1; XNAME(I)='obj_func   '; XDESC(I)=obj_func_desc ; XUNIT(I)=obj_func_unit
 ! attributes of model output
 I=I+1; XNAME(I)='numerx_rmse'; XDESC(I)='RMSE between exact and approximate solution        '; XUNIT(I)='mm timestep-1'
 I=I+1; XNAME(I)='mean_nfuncs'; XDESC(I)='mean number function evaluations                   '; XUNIT(I)='-            '
