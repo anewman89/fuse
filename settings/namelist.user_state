@@ -1,0 +1,7 @@
+&USER_STATE_INFO
+  init_flag = .FALSE.
+  input_state_file = "/glade/p/work/anewman/ff/islandpark/user_state/sce_seed_2_input.state"
+  output_state_file = "/glade/p/work/anewman/ff/islandpark/user_state/test_ff_output.state.derp"
+  state_out = .FALSE.
+  state_out_date = "1980-10-01"
+/

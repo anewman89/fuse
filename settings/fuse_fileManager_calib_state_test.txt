@@ -1,0 +1,21 @@
+FUSE_FILEMANAGER_V1.2
+!Empty command line
+! *** paths
+'/glade/p/work/anewman/ff/islandpark/settings/'    ! SETNGS_PATH
+'/glade/p/work/anewman/ff/islandpark/inputnew/'      ! INPUT_PATH
+'/glade/p/work/anewman/ff/islandpark/output/'     ! OUTPUT_PATH
+! *** control files
+'forcinginfo.XXXXXXXX.txt'       ! FORCINGINFO = info on forcing data files [ignore this line]
+'mbands_info.XXXXXXXX.txt'       ! MBANDS_INFO = info on basin bands datafile [ignore this line]
+'fuse_zDecisions_001.txt'        ! M_DECISIONS = definition of model decisions
+'fuse_zConstraints_snow.txt'     ! CONSTRAINTS = definition of parameter constraints
+'fuse_zNumerix.txt'              ! MOD_NUMERIX = definition of numerical solution technique
+'batea_param.txt'                ! BATEA_PARAM = definition of BATEA parameters [ignore this line]
+'namelist.fuse_calib_control'    ! CALIB_NMLIST = namelist definition of calibration settings
+'namelist.user_state'            ! STATE_NMLIST = namelist definition of user model state init/output settings
+! *** dates
+'1970-01-01'                     ! date_start_sim   = date start simulation
+'2016-12-31'                     ! date_end_sim     = date end simulation
+'1980-10-01'                     ! date_start_eval  = date start evaluation period
+'2014-09-31'                     ! date_end_eval    = date end evaluation period
+'-9999'                             ! numtim_sub       = number of time steps per sub-period [-9999 to run without sub-periods]

@@ -1,0 +1,20 @@
+&SCE_CONTROL
+  MAXN   =  20000          ! maximum number of trials before optimization is terminated
+  KSTOP  =  4              ! number of shuffling loops the value must change by PCENTO (MAX=9)
+  PCENTO =  0.001          ! the percentage
+  NGS    =  8              ! number of complexes in the initial population
+  MINGS  =  2              !  minimum number of complexes required, default = 2
+  INIFLG =  1              ! 1 = include initial point in the population
+  IPRINT =  1              ! 0 = supress printing
+  ISEED  =  44             ! integer used in start of initial random SCE parameter value draw
+/
+
+&METRIC_CONTROL
+  calib_type = "interval"       ! calibration type - compute metrics on daily series or series of maximums in a specified interval
+  calib_metric = "kge"      ! calibration metric
+  smooth_window = 1          ! window to perform smoothing over
+  interval_window = 365      ! window for generating series of maximum values
+  kge_a_corr = 1.            ! prefactor to weight correlation in kge   
+  kge_a_alpha = 5.           ! prefactor to weight variance bias(alpha) in kge
+  kge_a_beta = 1.            ! prefactor to weight volume bias(beta) in kge
+/
