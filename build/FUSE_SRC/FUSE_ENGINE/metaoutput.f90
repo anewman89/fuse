@@ -106,6 +106,7 @@ I=I+1; VNAME(I)='max_iterns' ; LNAME(I)='maximum number of iterations in implici
 ! model runoff (for BATEA, assumed to be last)
 I=I+1; VNAME(I)='q_instnt   '; LNAME(I)='instantaneous runoff                               '; VUNIT(I)='mm timestep-1'
 I=I+1; VNAME(I)='q_routed   '; LNAME(I)='routed runoff                                      '; VUNIT(I)='mm timestep-1'
+I=I+1; VNAME(I)='fut_runoff '; LNAME(I)='future timestep routed runoff                      '; VUNIT(I)='mm timestep-1'
 
 print *, 'Setting NOUTVAR (number of forcing, state and flux variables) to', I
 NOUTVAR=I

@@ -491,6 +491,7 @@ SELECT CASE (TRIM(VARNAME))
  ! extract model runoff
  CASE ('q_instnt')   ; XVAR_3d = AROUTE_3d%Q_INSTNT
  CASE ('q_routed')   ; XVAR_3d = AROUTE_3d%Q_ROUTED
+ CASE ('fut_runoff') : XVAR_3d = AROUTE_3d
  ! extract information on numerical solution (shared in MODULE model_numerix)
  CASE ('num_funcs')  ; XVAR_3d = NUM_FUNCS
  CASE ('numjacobian'); XVAR_3d = NUM_JACOBIAN

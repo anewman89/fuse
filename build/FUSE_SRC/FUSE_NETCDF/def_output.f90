@@ -19,6 +19,7 @@ SUBROUTINE DEF_OUTPUT(nSpat1,nSpat2,NPSET,NTIM)
   USE multiforce, only: timeUnits                       ! units string
   USE multistate, only: ncid_out                        ! NetCDF output file ID
   USE multibands,ONLY:N_BANDS                           ! number of snow bands
+  USE model_defn,ONLY:NTDH_MAX                          ! maximum future routed runoff dimension
 
   IMPLICIT NONE
 
@@ -39,6 +40,7 @@ SUBROUTINE DEF_OUTPUT(nSpat1,nSpat2,NPSET,NTIM)
   INTEGER(I4B)                           :: lon_dim     ! 1st spatial dimension
   INTEGER(I4B)                           :: lat_dim     ! 2nd spatial dimension
   INTEGER(I4B)                           :: param_dim   ! parameter set dimension
+  INTEGER(I4B)                           :: runoff_dim  ! future routed runoff dimension
   INTEGER(I4B)                           :: NMOD_DIM    ! number of models
   INTEGER(I4B), DIMENSION(4)             :: TVAR        ! time-varying dimensions
   INTEGER(I4B)                           :: IVAR        ! loop through variables
@@ -71,6 +73,7 @@ SUBROUTINE DEF_OUTPUT(nSpat1,nSpat2,NPSET,NTIM)
   IERR = NF_DEF_DIM(ncid_out,'longitude',nSpat1,lon_dim); CALL HANDLE_ERR(IERR)
   IERR = NF_DEF_DIM(ncid_out,'latitude',nSpat2,lat_dim); CALL HANDLE_ERR(IERR)
   IERR = NF_DEF_DIM(ncid_out,'param_set',NPSET,param_dim); CALL HANDLE_ERR(IERR)
+  IERR = NF_DEF_DIM(ncid_out,'fut_runoff',NTDH_MAX,runoff_dim); CALL HANDLE_ERR(IERR)
 
   ! define character-position dimension for strings of max length 40
   !IERR = NF_DEF_DIM(ncid_out, "chid", 40, CHID); CALL HANDLE_ERR(IERR)
@@ -119,18 +122,21 @@ SUBROUTINE DEF_OUTPUT(nSpat1,nSpat2,NPSET,NTIM)
         swe_band = 'swe_z'//TXT_ISNW
         IF (TRIM(VNAME(IVAR)).EQ. swe_band) WRITE_VAR=.TRUE.
       END DO
-      !IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'oflow_2') WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'oflow_2') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
       IF (.NOT.WRITE_VAR) CYCLE
     ENDIF
 
 
     ! write the variable
-    IERR = NF_DEF_VAR(ncid_out,TRIM(VNAME(IVAR)),NF_REAL,4,TVAR,IVAR_ID); CALL HANDLE_ERR(IERR)
-
+    IF(TRIM(VNAME(IVAR)) .ne. 'fut_runoff') THEN
+      IERR = NF_DEF_VAR(ncid_out,TRIM(VNAME(IVAR)),NF_REAL,4,TVAR,IVAR_ID); CALL HANDLE_ERR(IERR)
+    ELSE
+      IERR = NF_DEF_VAR(ncid_out,TRIM(VNAME(IVAR)),NF_REAL,4,(/lon_dim,lat_dim,runoff_dim,param_dim,NTIM_DIM/),IVAR_ID); CALL HANDLE_ERR(IERR)
+    ENDIF
     IERR = NF_PUT_ATT_TEXT(ncid_out,IVAR_ID,'long_name',LEN_TRIM(LNAME(IVAR)),TRIM(LNAME(IVAR)))
     CALL HANDLE_ERR(IERR)
     IERR = NF_PUT_ATT_TEXT(ncid_out,IVAR_ID,'units',LEN_TRIM(VUNIT(IVAR)),TRIM(VUNIT(IVAR)))

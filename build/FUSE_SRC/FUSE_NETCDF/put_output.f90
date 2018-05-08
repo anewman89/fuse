@@ -16,6 +16,7 @@ SUBROUTINE PUT_OUTPUT(iSpat1,iSpat2,ITIM,IMOD,IPAR)
   USE multiforce,ONLY:timDat                            ! time data
   USE multistate, only: ncid_out                        ! NetCDF output file ID
   USE multibands,ONLY:N_BANDS                           ! number of snow bands
+  USE model_defn,ONLY:NTDH_MAX                          ! maximum future routed runoff dimension
 
   IMPLICIT NONE
   ! input
@@ -59,6 +60,7 @@ SUBROUTINE PUT_OUTPUT(iSpat1,iSpat2,ITIM,IMOD,IPAR)
       IF (TRIM(VNAME(IVAR)).EQ.'evap_2')   WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'q_instnt') WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'q_routed') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'fut_runoff') WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'watr_1')   WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'watr_2')   WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'tens_1')   WRITE_VAR=.TRUE.
@@ -76,11 +78,11 @@ SUBROUTINE PUT_OUTPUT(iSpat1,iSpat2,ITIM,IMOD,IPAR)
         swe_band = 'swe_z'//TXT_ISNW
         IF (TRIM(VNAME(IVAR)).EQ. swe_band) WRITE_VAR=.TRUE.
       END DO
-      !IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'oflow_2') WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'oflow_2') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
       IF (.NOT.WRITE_VAR) CYCLE
     ENDIF
 
@@ -137,6 +139,7 @@ SUBROUTINE PUT_GOUTPUT_3D(istart_sim,istart_in,numtim,IPSET)
   USE multiforce, ONLY: gForce_3d                       ! test only
   USE multiforce, only: NUMTIM                          ! number of data steps
   USE multibands,ONLY:N_BANDS                           ! number of snow bands
+  USE model_defn,ONLY:NTDH_MAX                          ! maximum future routed runoff dimension
 
   IMPLICIT NONE
 
@@ -155,7 +158,9 @@ SUBROUTINE PUT_GOUTPUT_3D(istart_sim,istart_in,numtim,IPSET)
   REAL(SP)                               :: XVAR        ! desired variable (SP NOT NECESSARILY SP)
   REAL(MSP)                              :: AVAR        ! desired variable (SINGLE PRECISION)
   REAL(SP), DIMENSION(nspat1,nspat2,numtim)    :: XVAR_3d        ! desired variable (SINGLE PRECISION)
+  REAL(SP), DIMENSION(nspat1,nspat2,NTDH_MAX,numtim)    :: XVAR_4d        ! desired variable (SINGLE PRECISION)
   REAL(MSP), DIMENSION(nspat1,nspat2,numtim)   :: AVAR_3d        ! desired variable (SINGLE PRECISION)
+  REAL(MSP), DIMENSION(nspat1,nspat2,NTDH_MAX,numtim)   :: AVAR_4d        ! desired variable (SINGLE PRECISION)
   REAL(MSP), DIMENSION(:), ALLOCATABLE   :: tDat            ! time data
   REAL(SP), DIMENSION(:), ALLOCATABLE    :: time_steps_sub  ! time data
   INTEGER(I4B)                           :: IVAR_ID     ! variable ID
@@ -186,6 +191,7 @@ SUBROUTINE PUT_GOUTPUT_3D(istart_sim,istart_in,numtim,IPSET)
       IF (TRIM(VNAME(IVAR)).EQ.'evap_2')   WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'q_instnt') WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'q_routed') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'fut_runoff') WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'watr_1')   WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'watr_2')   WRITE_VAR=.TRUE.
       IF (TRIM(VNAME(IVAR)).EQ.'tens_1')   WRITE_VAR=.TRUE.
@@ -203,11 +209,11 @@ SUBROUTINE PUT_GOUTPUT_3D(istart_sim,istart_in,numtim,IPSET)
         swe_band = 'swe_z'//TXT_ISNW
         IF (TRIM(VNAME(IVAR)).EQ. swe_band) WRITE_VAR=.TRUE.
       END DO
-      !IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'oflow_2') WRITE_VAR=.TRUE.
-      !IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'qsurf')   WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'oflow_1') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'qintf_1') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'oflow_2') WRITE_VAR=.TRUE.
+      IF (TRIM(VNAME(IVAR)).EQ.'qbase_2') WRITE_VAR=.TRUE.
       IF (.NOT.WRITE_VAR) CYCLE
     ENDIF
 
@@ -233,11 +239,17 @@ SUBROUTINE PUT_GOUTPUT_3D(istart_sim,istart_in,numtim,IPSET)
 !    ENDIF
 
     ! write the variable
-    XVAR_3d = VAREXTRACT_3d(VNAME(IVAR),numtim)   ! get variable
-    AVAR_3d = XVAR_3d                             ! convert format
-    IERR = NF_INQ_VARID(ncid_out,TRIM(VNAME(IVAR)),IVAR_ID); CALL HANDLE_ERR(IERR) ! get variable ID
-    IERR = NF_PUT_VARA_REAL(ncid_out,IVAR_ID,IND_START,IND_COUNT,AVAR_3d); CALL HANDLE_ERR(IERR) ! write data
-
+    IF(TRIM(VNAME(IVAR)) .ne. 'fut_runoff') THEN
+      XVAR_3d = VAREXTRACT_3d(VNAME(IVAR),numtim)   ! get variable
+      AVAR_3d = XVAR_3d                             ! convert format
+      IERR = NF_INQ_VARID(ncid_out,TRIM(VNAME(IVAR)),IVAR_ID); CALL HANDLE_ERR(IERR) ! get variable ID
+      IERR = NF_PUT_VARA_REAL(ncid_out,IVAR_ID,IND_START,IND_COUNT,AVAR_3d); CALL HANDLE_ERR(IERR) ! write data
+    ELSE
+      XVAR_4d = VAREXTRACT_3d(VNAME(IVAR),numtim)   ! get variable
+      AVAR_4d = XVAR_4d                             ! convert format
+      IERR = NF_INQ_VARID(ncid_out,TRIM(VNAME(IVAR)),IVAR_ID); CALL HANDLE_ERR(IERR) ! get variable ID
+      IERR = NF_PUT_VARA_REAL(ncid_out,IVAR_ID,(/1,1,IPSET,1,istart_sim/),(/nspat1,nspat2,NTDH_MAX,1,numtim/),AVAR_3d); CALL HANDLE_ERR(IERR) ! write data
+    ENDIF
   END DO  ! (ivar)
 
   ! write the time
