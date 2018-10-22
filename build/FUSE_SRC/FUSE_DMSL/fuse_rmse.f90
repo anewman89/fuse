@@ -47,6 +47,8 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
     USE fuse_fileManager, ONLY:SETNGS_PATH                   ! path to namelist file for state restart
     USE fuse_fileManager, ONLY:STATE_NMLIST                  ! namelist file for state restart 
 
+    USE selectmodl_module                                     ! reads model control file
+
     ! code modules
     USE time_io, ONLY:get_modtim                             ! get model time for a given time step
     USE time_io, ONLY:date_extractor                         ! extract date integers from string variable
@@ -90,6 +92,9 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
 !    CHARACTER(LEN=100)                     :: STATE_OUT_DATE        ! date of user specified state output
 !    LOGICAL(lgt)                           :: INIT_FLAG             ! init with user specified file (.TRUE.) or default (.FALSE.)    
 !    LOGICAL(lgt)                           :: STATE_OUT             ! flag to dump model state
+
+    CHARACTER(LEN=4)                       :: cYear               ! character array of year
+    CHARACTER(LEN=2)                       :: cMNTH,cDAY,cHOUR    ! character arrays of month, day, hour
 
     LOGICAL(lgt),PARAMETER                 :: computePET=.FALSE. ! flag to compute PET
     REAL(SP)                               :: T1,T2          ! CPU time
@@ -218,11 +223,20 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
       ! if model time is equal to user specified output state date, dump state
       call date_extractor(STATE_OUT_DATE,YEAR,MNTH,DAY,HOUR)
 
-      IF(STATE_OUT .eq. .TRUE. .AND. timdat%IY .EQ. YEAR .AND. timdat%IM .EQ. MNTH .AND.  &
-               timdat%ID .EQ. DAY  .AND. timdat%IH .EQ. HOUR) THEN
+!      IF(STATE_OUT .eq. .TRUE. .AND. timdat%IY .EQ. YEAR .AND. timdat%IM .EQ. MNTH .AND.  &
+!               timdat%ID .EQ. DAY  .AND. timdat%IH .EQ. HOUR) THEN
+      
 !print *, STATE_OUT, timdat%IY,timdat%IM,timdat%ID,timdat%IH,YEAR,MNTH,DAY,HOUR
+      
+        write(cYEAR, "(I0.4)") timdat%IY
+        write(cMNTH, "(I0.2)") timdat%IM
+        write(cDAY, "(I0.2)") timdat%ID
+        write(cHOUR, "(I0.2)") timdat%IH
+
+        OUTPUT_STATE_FILE="/glade/work/anewman/ff/islandpark/daily_states/"//trim(FUSE_MODEL_ID)//"/"//cYear//"-"//cMNTH//"-"//cDay//"_state.txt"
+
         CALL OUTPUT_STATE(OUTPUT_STATE_FILE)
-      END IF
+!      END IF
 
       ! compute potential ET
       IF(computePET) CALL getPETgrid(ierr,cmessage)

@@ -1,5 +1,8 @@
 MODULE SELECTMODL_MODULE
 IMPLICIT NONE
+
+CHARACTER(LEN=6)    :: FUSE_MODEL_ID   ! global FUSE model identifier
+
 CONTAINS
 ! ---------------------------------------------------------------------------------------
 SUBROUTINE SELECTMODL(FUSE_ID,ERR,MESSAGE)

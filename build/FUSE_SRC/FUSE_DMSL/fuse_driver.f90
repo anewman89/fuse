@@ -189,6 +189,8 @@ IF(TRIM(fuse_mode).EQ.'run_pre')THEN
   print*, '5th command-line argument (file_para_list) = ', file_para_list
 ENDIF
 
+FUSE_MODEL_ID = FMODEL_ID
+
 ! ---------------------------------------------------------------------------------------
 ! SET PATHS AND FILES NAME
 ! ---------------------------------------------------------------------------------------
