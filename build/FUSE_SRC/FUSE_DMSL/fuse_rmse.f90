@@ -197,7 +197,7 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
     PRINT *, 'Running FUSE...'
 
     DO ITIM_IN=sim_beg,sim_end
-
+!print *,ITIM_IN
       ! if start of subperiod: load forcing
       IF(itim_sub.EQ.1)THEN
 

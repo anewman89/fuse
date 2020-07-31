@@ -70,8 +70,8 @@ ALLOCATE(QOBS(NS),QOBS_MASK(NS),QSIM(NS),STAT=IERR)
 IF (IERR.NE.0) STOP ' PROBLEM ALLOCATING SPACE IN MEAN_STATS.F90 '
 
 ! extract OBS and SIM for evaluation period
-QSIM = AROUTE_3d(1,1,eval_beg-sim_beg:eval_end-sim_beg)%Q_ROUTED ! -sim_beg because AROUTE_3d is of length numtim_sim
-QOBS = aValid(1,1,eval_beg-sim_beg:eval_end-sim_beg)%OBSQ
+QSIM = AROUTE_3d(1,1,eval_beg-sim_beg+1:eval_end-sim_beg+1)%Q_ROUTED ! -sim_beg because AROUTE_3d is of length numtim_sim
+QOBS = aValid(1,1,eval_beg-sim_beg+1:eval_end-sim_beg+1)%OBSQ
 
 !PRINT *, 'QOBS', QOBS
 !PRINT *, 'QSIM', QSIM
