@@ -267,7 +267,7 @@ all: compile_URS install_URS clean
 
 # compile FUSE into a static library
 compile_URS:
-	$(FC) $(FLAGS_NORMA) $(FUSE_ALL) $(URS_DRIVER) \
+	$(FC) $(FLAGS_DEBUG) $(FUSE_ALL) $(URS_DRIVER) \
 	$(LIBNETCDF) $(INCNETCDF) -o $(URS_DRIVER__EX)
 
 # Remove object files
