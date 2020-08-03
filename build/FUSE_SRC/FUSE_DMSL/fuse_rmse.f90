@@ -233,7 +233,8 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
         write(cDAY, "(I0.2)") timdat%ID
         write(cHOUR, "(I0.2)") timdat%IH
 
-        OUTPUT_STATE_FILE="/glade/work/anewman/ff/islandpark/daily_states/"//trim(FUSE_MODEL_ID)//"/"//cYear//"-"//cMNTH//"-"//cDay//"_state.txt"
+!        OUTPUT_STATE_FILE="/glade/work/anewman/ff/islandpark/daily_states/"//trim(FUSE_MODEL_ID)//"/"//cYear//"-"//cMNTH//"-"//cDay//"_state.txt"
+        OUTPUT_STATE_FILE="/glade/p/ral/hap/anewman/bor_ff/altus/daily_states/"//trim(FUSE_MODEL_ID)//"/"//cYear//"-"//cMNTH//"-"//cDay//"_state.txt"
 
         CALL OUTPUT_STATE(OUTPUT_STATE_FILE)
 !      END IF
