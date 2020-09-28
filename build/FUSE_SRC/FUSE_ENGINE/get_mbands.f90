@@ -54,11 +54,11 @@ REAL(SP),DIMENSION(:),ALLOCATABLE      :: TMPDAT      ! one line of data
 ! read in control file
 err=0
 CFILE = TRIM(SETNGS_PATH)//MBANDS_INFO      ! control file info shared in MODULE directory
-print *, 'Elevation bands info file:',TRIM(CFILE)
+!print *, 'Elevation bands info file:',TRIM(CFILE)
 
 INQUIRE(FILE=CFILE,EXIST=LEXIST)  ! check that control file exists
 IF (.NOT.LEXIST) THEN
-	print *, 'f-GET_MBANDS/control file ',TRIM(CFILE),' for band data does not exist '
+	!print *, 'f-GET_MBANDS/control file ',TRIM(CFILE),' for band data does not exist '
 	STOP
 ENDIF
 ! read in parameters of the control files
@@ -91,7 +91,7 @@ JBAND = 0
 BFILE = TRIM(INPUT_PATH)//FNAME_INPUT
 INQUIRE(FILE=BFILE,EXIST=LEXIST)  ! check that control file exists
 IF (.NOT.LEXIST) THEN
- print *, 'f-GET_MBANDS/band data file '//TRIM(BFILE)//' does not exist '
+ !print *, 'f-GET_MBANDS/band data file '//TRIM(BFILE)//' does not exist '
  err=100; return
 ENDIF
 CALL getSpareUnit(IUNIT,err,message) ! make sure IUNIT is actually available
@@ -109,7 +109,7 @@ DO IHEAD=1,NHEADB
  ENDIF
 END DO
 
-print *, 'Z_FORCING', Z_FORCING
+!print *, 'Z_FORCING', Z_FORCING
 
 ! read data
 DO IBANDS=1,N_BANDS
@@ -186,18 +186,18 @@ integer(i4b)                           :: dimLen      ! dimension length
 ! read in NetCDF file defining the elevation bands - no info file needed for the gridded version
 err=0
 CFILE = TRIM(INPUT_PATH)//ELEV_BANDS_NC      ! control file info shared in MODULE directory
-print *, 'Loading elevation bands from:',TRIM(CFILE)
+!print *, 'Loading elevation bands from:',TRIM(CFILE)
 
 INQUIRE(FILE=CFILE,EXIST=LEXIST)  ! check that control file exists
 IF (.NOT.LEXIST) THEN
-	print *, 'f-GET_MBANDS_GRID/NetCDF file ',TRIM(CFILE),' for elevation bands does not exist '
+	!print *, 'f-GET_MBANDS_GRID/NetCDF file ',TRIM(CFILE),' for elevation bands does not exist '
 	STOP
 ENDIF
 
 !open netcdf file
 err = nf90_open(CFILE, nf90_nowrite, NCID_EB)
 if (err.ne.0) write(*,*) trim(message); if (err.gt.0) stop
-PRINT *, 'NCID_EB is', NCID_EB
+!PRINT *, 'NCID_EB is', NCID_EB
 
 ! get the dimension IDs for elevation_band
 ierr = nf90_inq_dimid(NCID_EB, 'elevation_band', dimid_eb)
@@ -209,7 +209,7 @@ if(err/=0)then; message=trim(message)//trim(nf90_strerror(err)); return; endif
 
 ! save the dimension lengths
 N_BANDS = dimLen  ! number of elevation bands
-print *, 'N_BANDS = ', N_BANDS
+!print *, 'N_BANDS = ', N_BANDS
 
 ! get the variable ID for the fraction of the area contained in each elevation band
 ierr = nf90_inq_varid(NCID_EB, 'area_frac', ivarid_af)
@@ -247,14 +247,14 @@ DO iSpat2=1,nSpat2
 	 Z_FORCING_grid(iSpat1,iSpat2)    = sum(me_TEMP(iSpat1,iSpat2,:)*af_TEMP(iSpat1,iSpat2,:)) ! estimate mean elevation of forcing using weighted mean of EB elevation
 	 elev_mask(iSpat1,iSpat2)=me_TEMP(iSpat1,iSpat2,1)
 
-	 PRINT *, 'Z_FORCING_grid =', Z_FORCING_grid(iSpat1,iSpat2)
-	 PRINT *, 'MBANDS_INFO_3d - ELEV =', MBANDS_INFO_3d(iSpat1,iSpat2,:)%Z_MID
-	 PRINT *, 'MBANDS_INFO_3d - FRAC =', MBANDS_INFO_3d(iSpat1,iSpat2,:)%AF
+	 !PRINT *, 'Z_FORCING_grid =', Z_FORCING_grid(iSpat1,iSpat2)
+	 !PRINT *, 'MBANDS_INFO_3d - ELEV =', MBANDS_INFO_3d(iSpat1,iSpat2,:)%Z_MID
+	 !PRINT *, 'MBANDS_INFO_3d - FRAC =', MBANDS_INFO_3d(iSpat1,iSpat2,:)%AF
 
 	 if (abs(sum(MBANDS_INFO_3d(iSpat1,iSpat2,:)%AF)-1).GT.1E-6) then ! check that area fraction sum to 1
 
- 	  print *, 'DIF EB = ', abs(sum(MBANDS_INFO_3d(iSpat1,iSpat2,:)%AF)-1)
-	 	print *, "f-GET_MBANDS/area fraction of elevation bands do not sum to 1" ! TODO: use message instead?
+ 	  !print *, 'DIF EB = ', abs(sum(MBANDS_INFO_3d(iSpat1,iSpat2,:)%AF)-1)
+	 	!print *, "f-GET_MBANDS/area fraction of elevation bands do not sum to 1" ! TODO: use message instead?
 		stop
 
 	 end if
@@ -267,7 +267,7 @@ if (err.ne.0) write(*,*) trim(message); if (err.gt.0) stop
 
 DEALLOCATE(AF_TEMP, ME_TEMP)
 
-print *, 'Done populating data structures for elevation bands'
+!print *, 'Done populating data structures for elevation bands'
 
 END SUBROUTINE GET_MBANDS_INFO
 

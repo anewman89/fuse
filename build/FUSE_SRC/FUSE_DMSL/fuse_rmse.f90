@@ -127,8 +127,8 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
 
     ! add parameter set to the data structure
     CALL PUT_PARSET(XPAR)
-    PRINT *, 'Parameter set added to data structure:'
-    PRINT *, XPAR
+    !PRINT *, 'Parameter set added to data structure:'
+    !PRINT *, XPAR
     !DO IPAR=1,NUMPAR; WRITE(*,'(A11,1X,F9.3)') LPARAM(IPAR), XPAR(IPAR); END DO
 
     ! compute derived model parameters (bucket sizes, etc.)
@@ -151,12 +151,12 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
           gState_3d(iSpat1,iSpat2,1) = FSTATE     ! put the state into the 3_d structure
        END DO
     END DO
-    PRINT *, 'Model states initialized over the 2D gridded domain'
+    !PRINT *, 'Model states initialized over the 2D gridded domain'
 
     ! initialize elevations bands if snow module is on - see init_state.f90 for catchment-scale modeling
     ! IF (SMODL%iSNOWM.EQ.iopt_temp_index .AND. SPATIAL_OPTION == LUMPED) THEN
 
-    PRINT *, 'N_BANDS =', N_BANDS
+    !PRINT *, 'N_BANDS =', N_BANDS
 
     IF (SMODL%iSNOWM.EQ.iopt_temp_index) THEN
       DO iSpat2=1,nSpat2
@@ -175,7 +175,7 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
           END DO
         END DO
       END DO
-      PRINT *, 'Snow states initiatlized over the 2D gridded domain '
+      !PRINT *, 'Snow states initiatlized over the 2D gridded domain '
     ENDIF
 
     ! allocate 3d data structures for fluxes
@@ -204,10 +204,10 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
         ! determine length of current subperiod
         numtim_sub_cur=MIN(numtim_sub,numtim_sim-itim_sim+1)
 
-        PRINT *, 'New subperiod: loading forcing for ',numtim_sub_cur,' time steps'
+        !PRINT *, 'New subperiod: loading forcing for ',numtim_sub_cur,' time steps'
         CALL get_gforce_3d(itim_in,numtim_sub_cur,ncid_forc,err,message)
         IF(err/=0)THEN; WRITE(*,*) 'Error while extracting 3d forcing'; STOP; ENDIF
-        PRINT *, 'Forcing loaded'
+        !PRINT *, 'Forcing loaded'
 
       ENDIF
 
@@ -332,15 +332,15 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
       ! if end of subperiod: move state of last time step to first and flush memory
       IF(itim_sub.EQ.numtim_sub_cur)THEN
 
-        PRINT *, 'End of subperiod reached:'
+        !PRINT *, 'End of subperiod reached:'
 
         ! write model output
         IF (OUTPUT_FLAG) THEN
-          PRINT *, 'Write output for ',numtim_sub_cur,' time steps starting at indice', itim_sim-numtim_sub_cur+1
+          !PRINT *, 'Write output for ',numtim_sub_cur,' time steps starting at indice', itim_sim-numtim_sub_cur+1
           CALL PUT_GOUTPUT_3D(itim_sim-numtim_sub_cur+1,itim_in-numtim_sub_cur+1,numtim_sub_cur,IPSET)
-          PRINT *, 'Done writing output'
+          !PRINT *, 'Done writing output'
         ELSE
-          PRINT *, 'OUTPUT_FLAG is set on FALSE, no output written'
+          !PRINT *, 'OUTPUT_FLAG is set on FALSE, no output written'
         END IF
 
         ! TODO: reinitialize gState_3d and MBANDS_VAR_4d instead of overwritting them
@@ -376,7 +376,7 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
 
       ! get timing information
       CALL CPU_TIME(T2)
-      WRITE(*,*) "TIME ELAPSED = ", t2-t1
+      !WRITE(*,*) "TIME ELAPSED = ", t2-t1
 
       ! calculate mean summary statistics
       CALL MEAN_STATS()
@@ -395,14 +395,14 @@ MODULE FUSE_RMSE_MODULE  ! have as a module because of dynamic arrays
           FUNC_VAL = -MSTATS%KGE_INT  !negative KGE for minimization of objective function
         endif
       endif
-      PRINT *, 'FUNC_VAL = ', FUNC_VAL
+      !PRINT *, 'FUNC_VAL = ', FUNC_VAL
 
       !set generic output obj_func variable
       MSTATS%OBJ_FUNC = FUNC_VAL
 
-      PRINT *, 'Writing parameter values...'
+      !PRINT *, 'Writing parameter values...'
       CALL PUT_PARAMS(PCOUNT)
-      PRINT *, 'Writing model statistics...'
+      !PRINT *, 'Writing model statistics...'
       CALL PUT_SSTATS(PCOUNT)
 
       ! deallocate state vectors

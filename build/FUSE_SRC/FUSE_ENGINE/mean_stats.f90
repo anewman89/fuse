@@ -63,7 +63,7 @@ REAL(SP), PARAMETER                    :: NO_ZERO=1.E-20  ! avoid divide by zero
 ! define sample size
 !NS = (NUMTIM_SIM-ISTART) + 1    ! (ISTART is shared in MODULE multiforce)
 NS =  eval_end-eval_beg+1
-PRINT *, 'Number of time steps in evaluation period = ', NS
+!PRINT *, 'Number of time steps in evaluation period = ', NS
 
 ! allocate space for observed and simulated runoff
 ALLOCATE(QOBS(NS),QOBS_MASK(NS),QSIM(NS),STAT=IERR)
@@ -80,7 +80,7 @@ QOBS = aValid(1,1,eval_beg-sim_beg+1:eval_end-sim_beg+1)%OBSQ
 QOBS_MASK = QOBS.ne.REAL(NA_VALUE, KIND(SP)) ! find the time steps for which QOBS is available
 NUM_AVAIL = COUNT(QOBS_MASK)	! number of time steps for which QOBS is available
 
-PRINT *, 'Number of time steps with available discharge in evaluation period = ', NUM_AVAIL
+!PRINT *, 'Number of time steps with available discharge in evaluation period = ', NUM_AVAIL
 
 !allocate space for flow and other compuational variables
 ALLOCATE(QOBS_AVAIL(NUM_AVAIL),QSIM_AVAIL(NUM_AVAIL),DOBS(NUM_AVAIL),DSIM(NUM_AVAIL),RAWD(NUM_AVAIL),LOGD(NUM_AVAIL),STAT=IERR)
@@ -159,7 +159,7 @@ MSTATS%LOG_RMSE  = SQRT( SS_LOG / REAL(NUM_AVAIL, KIND(SP)) )
 ! compute the Nash-Sutcliffe score
 MSTATS%NASH_SUTT = 1. - SS_RAW/(SS_OBS+NO_ZERO)
 
-PRINT *, 'NSE = ', MSTATS%NASH_SUTT
+!PRINT *, 'NSE = ', MSTATS%NASH_SUTT
 ! ---------------------------------------------------------------------------------------
 ! (4) COMPUTE STATISTICS ON NUMERICAL ACCURACY AND EFFICIENCY
 ! ---------------------------------------------------------------------------------------

@@ -106,8 +106,8 @@ contains
  ! build filename
  cfile = trim(SETNGS_PATH)//trim(FORCINGINFO) ! uses paths and filenames from MODULE fuse_fileManager
 
- print *, 'Reading forcing info from:'
- print *, trim(cfile)
+ !print *, 'Reading forcing info from:'
+ !print *, trim(cfile)
  ! open file (also returns un-used file unit used to open the file)
  call file_open(trim(cfile),iunit,ierr,cmessage)
  if(ierr/=0)then; message=trim(message)//trim(cmessage); return; endif
@@ -206,7 +206,7 @@ contains
   write(*,'(a,1x,f9.6,1x,L1)') '<deltim>',        deltim,              lCheck(iDeltim)
   write(*,'(a,1x,f9.3,1x,L1)') '<xlon>',          xlon,                lCheck(ixlon)
   write(*,'(a,1x,f9.3,1x,L1)') '<ylat>',          ylat,                lCheck(iylat)
-  print*, lCheck, size(lcheck)
+  !print*, lCheck, size(lcheck)
   return
  endif  ! if we missed a variable
 

@@ -44,12 +44,12 @@ include 'netcdf.inc'                                  ! use netCDF libraries
 ! check that the file exists
 INQUIRE(FILE=TRIM(NETCDF_FILE),EXIST=LEXIST)
 IF (.NOT.LEXIST) THEN
- print *, 'The NetCDF file containing the predefined parameter set does not exist:'
- print *, TRIM(NETCDF_FILE)
+ !print *, 'The NetCDF file containing the predefined parameter set does not exist:'
+ !print *, TRIM(NETCDF_FILE)
  STOP
 ENDIF
 
-print *, 'Opening parameter file:', TRIM(NETCDF_FILE)
+!print *, 'Opening parameter file:', TRIM(NETCDF_FILE)
 
 ! open file
 IERR = NF_OPEN(TRIM(NETCDF_FILE),NF_NOWRITE,NCID); CALL HANDLE_ERR(IERR)
@@ -58,14 +58,14 @@ IERR = NF_OPEN(TRIM(NETCDF_FILE),NF_NOWRITE,NCID); CALL HANDLE_ERR(IERR)
 IERR = NF_INQ_DIMID(NCID,'par',IDIMID); CALL HANDLE_ERR(IERR)
 IERR = NF_INQ_DIMLEN(NCID,IDIMID,NPAR); CALL HANDLE_ERR(IERR)
 
-print *, 'NPAR - total number of parameter sets in parameter file:', NPAR
+!print *, 'NPAR - total number of parameter sets in parameter file:', NPAR
 
 IF (ISET.GT.NPAR) THEN
  print *, 'Impossible to extract parameter set', ISET, 'since there are only', NPAR, 'parameter sets'
  STOP
 ENDIF
 
-print *, 'Extracting parameter set', ISET
+!print *, 'Extracting parameter set', ISET
 
 ! loop through parameters
 DO IPAR=1,NUMPAR
@@ -80,11 +80,11 @@ DO IPAR=1,NUMPAR
   ! put parameter value in the output vector
   XPAR(IPAR) = APAR
 
-  print *, 'PARAM VALUES:',LPARAM(IPAR)%PARNAME, '->', APAR
+  !print *, 'PARAM VALUES:',LPARAM(IPAR)%PARNAME, '->', APAR
 
 END DO
 
-PRINT *, 'Predefined parameter set loaded into XPAR!'
+!PRINT *, 'Predefined parameter set loaded into XPAR!'
 
 ! close NetCDF file
 IERR = NF_CLOSE(NCID)
@@ -137,8 +137,8 @@ IF (.NOT.LEXIST) THEN
  STOP
 ELSE
 
-  print *, 'Loading SCE parameters from'
-  print *, TRIM(NETCDF_FILE)
+  !print *, 'Loading SCE parameters from'
+  !print *, TRIM(NETCDF_FILE)
 
 ENDIF
 
@@ -150,7 +150,7 @@ IERR = NF_OPEN(TRIM(NETCDF_FILE),NF_NOWRITE,NCID); CALL HANDLE_ERR(IERR)
  IERR = NF_INQ_DIMLEN(NCID,IDIMID,NPAR); CALL HANDLE_ERR(IERR)
 
  ! extract RMSE for each parameter set
- print *, 'Length of the par dimension (the number of parameter sets produced by SCE is lower)', NPAR
+ !print *, 'Length of the par dimension (the number of parameter sets produced by SCE is lower)', NPAR
 
  ALLOCATE(OBJ_FUNC(NPAR),STAT=IERR); IF(IERR.NE.0) STOP ' problem allocating space for OBJ_FUNC '
 
@@ -159,12 +159,12 @@ IERR = NF_OPEN(TRIM(NETCDF_FILE),NF_NOWRITE,NCID); CALL HANDLE_ERR(IERR)
 
  I_OPT_PARA = MINLOC(OBJ_FUNC,DIM=1) !TODO: use argument MASK to find best parameter set for each of the SCE run
  LOWEST_OBJ_FUNC=OBJ_FUNC(I_OPT_PARA)
- print *, 'Index of parameter set with lowest OBJ_FUNC =',I_OPT_PARA
- print *, 'Lowest RMSE =',LOWEST_OBJ_FUNC
+ !print *, 'Index of parameter set with lowest OBJ_FUNC =',I_OPT_PARA
+ !print *, 'Lowest RMSE =',LOWEST_OBJ_FUNC
 
  DEALLOCATE(OBJ_FUNC,STAT=IERR); IF (IERR.NE.0) STOP ' problem deallocating ATIME/TDATA '
 
- PRINT *, 'Reading from NetCDF file parameter values for best parameter set:'
+ !PRINT *, 'Reading from NetCDF file parameter values for best parameter set:'
 
  ! loop through parameters
  DO IPAR=1,NUMPAR
@@ -179,11 +179,11 @@ IERR = NF_OPEN(TRIM(NETCDF_FILE),NF_NOWRITE,NCID); CALL HANDLE_ERR(IERR)
   ! put parameter value in the output vector
   XPAR(IPAR) = APAR
 
-  print *, 'PARAM VALUES:',LPARAM(IPAR)%PARNAME, '->', APAR
+  !print *, 'PARAM VALUES:',LPARAM(IPAR)%PARNAME, '->', APAR
 
  END DO
 
- PRINT *, 'Best parameter set loaded into XPAR!'
+ !PRINT *, 'Best parameter set loaded into XPAR!'
 
 ! close NetCDF file
 IERR = NF_CLOSE(NCID)

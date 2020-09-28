@@ -37,7 +37,7 @@ SELECT CASE(SMODL%iQ_TDH)
   ALPHA = 2.5_SP                                             ! shape parameter
 
   !PRINT *, 'MPARAM%TIMEDELAY= ', MPARAM%TIMEDELAY
-  PRINT *, 'MPARAM= ', MPARAM
+  !PRINT *, 'MPARAM= ', MPARAM
 
   ALAMB = ALPHA/MPARAM%TIMEDELAY                             ! scale parameter
   PSAVE = 0._SP                                              ! cumulative probability at JTIM-1

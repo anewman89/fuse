@@ -171,8 +171,8 @@ SUBROUTINE PUT_GOUTPUT_3D(istart_sim,istart_in,numtim,IPSET)
   IND_START = (/1,1,IPSET,istart_sim/)     ! the indices start at 1, i.e. the first data value in (1, 1, ..., 1)
   IND_COUNT = (/nspat1,nspat2,1,numtim/)  ! third element is 1 because we only write results for one parameter set at a time
 
-  PRINT *, 'IND_START=', IND_START
-  PRINT *, 'IND_COUNT=', IND_COUNT
+  !PRINT *, 'IND_START=', IND_START
+  !PRINT *, 'IND_COUNT=', IND_COUNT
 
   ! loop through time-varying model output
   DO IVAR=1,NOUTVAR

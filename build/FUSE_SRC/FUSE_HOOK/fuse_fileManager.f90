@@ -79,13 +79,13 @@ elseif(haveFMG)then
   fuseFileManager=fuseFileManagerIn
   i=scan(fuseFileManager,pathDelim,back=.true.)
   if(i>0)defpath=fuseFileManager(:i-1)//pathDelim(1:1)
-  print *, 'fuseFileManager:', TRIM(fuseFileManager)
+!  print *, 'fuseFileManager:', TRIM(fuseFileManager)
 
 elseif(haveMUS)then
   fuseMusterDirektor=fuseMusterDirektorIn
   i=scan(fuseMusterDirektor,pathDelim,back=.true.)
   if(i>0)defpath=fuseMusterDirektor(:i-1)//pathDelim(1:1)
-  print *, 'fuseMusterDirektor:', TRIM(fuseMusterDirektor)
+!  print *, 'fuseMusterDirektor:', TRIM(fuseMusterDirektor)
 
 else
   message="f-"//procnam//"/mustSpecifyEither&
@@ -152,17 +152,17 @@ if(SETNGS_PATH(1:1)==defpathSymb)SETNGS_PATH=trim(defpath)//SETNGS_PATH(2:)
 if( INPUT_PATH(1:1)==defpathSymb) INPUT_PATH=trim(defpath)//INPUT_PATH (2:)
 if(OUTPUT_PATH(1:1)==defpathSymb)OUTPUT_PATH=trim(defpath)//OUTPUT_PATH(2:)
 
-PRINT *, 'Variables defined in file manager:'
-PRINT *, 'SETNGS_PATH:', TRIM(SETNGS_PATH)
-PRINT *, 'INPUT_PATH:', TRIM(INPUT_PATH)
-PRINT *, 'OUTPUT_PATH:', TRIM(OUTPUT_PATH)
+!PRINT *, 'Variables defined in file manager:'
+!PRINT *, 'SETNGS_PATH:', TRIM(SETNGS_PATH)
+!PRINT *, 'INPUT_PATH:', TRIM(INPUT_PATH)
+!PRINT *, 'OUTPUT_PATH:', TRIM(OUTPUT_PATH)
 
-PRINT *, 'Dates defined in file manager:'
-PRINT *, 'date_start_sim:', TRIM(date_start_sim)
-PRINT *, 'date_end_sim:', TRIM(date_end_sim)
-PRINT *, 'date_start_eval:', TRIM(date_start_eval)
-PRINT *, 'date_end_eval:', TRIM(date_end_eval)
-PRINT *, 'numtim_sub_str:', TRIM(numtim_sub_str)
+!PRINT *, 'Dates defined in file manager:'
+!PRINT *, 'date_start_sim:', TRIM(date_start_sim)
+!PRINT *, 'date_end_sim:', TRIM(date_end_sim)
+!PRINT *, 'date_start_eval:', TRIM(date_start_eval)
+!PRINT *, 'date_end_eval:', TRIM(date_end_eval)
+!PRINT *, 'numtim_sub_str:', TRIM(numtim_sub_str)
 
 ! End procedure here
 endsubroutine fuse_SetDirsUndPhiles

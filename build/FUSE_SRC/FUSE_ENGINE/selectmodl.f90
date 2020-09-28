@@ -88,7 +88,7 @@ IF (.not.LEXIST) THEN
   message="f-SELECTMODL/decisions file '"//trim(CFILE)//"' does not exist"
   err=100; return
 ELSE
-  print *, 'Now reading model decisions from:', trim(CFILE)
+  !print *, 'Now reading model decisions from:', trim(CFILE)
 ENDIF
 
 ! open up model decisions file
@@ -105,12 +105,12 @@ READ(IUNIT,'(a)') KEY
 CALL stripTrailString(string=KEY,trailStart='!')
 
 ! read model decisions
-print *, 'Model decisions:'
+!print *, 'Model decisions:'
 
 DO IDEC=1,NDEC
   READ(IUNIT,KEY) M_CHOICE, DECISION
   !WRITE(*,KEY) M_CHOICE, DECISION
-  PRINT *, DECISION, '-> ', M_CHOICE
+  !PRINT *, DECISION, '-> ', M_CHOICE
   SELECT CASE (DECISION)
     CASE('RFERR'); SMODL%iRFERR = desc_str2int(M_CHOICE)
     CASE('ARCH1'); SMODL%iARCH1 = desc_str2int(M_CHOICE)

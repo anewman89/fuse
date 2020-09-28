@@ -59,8 +59,8 @@ SUBROUTINE DEF_OUTPUT(nSpat1,nSpat2,NPSET,NTIM)
   CALL VARDESCRIBE()  ! get list of variable descriptions
   ! ---------------------------------------------------------------------------------------
 ! put file in define mode
-  print *, 'Create NetCDF file for runs:'
-  PRINT *, FNAME_NETCDF_RUNS
+  !print *, 'Create NetCDF file for runs:'
+  !PRINT *, FNAME_NETCDF_RUNS
 
   IERR = NF_CREATE(TRIM(FNAME_NETCDF_RUNS),NF_CLOBBER,ncid_out); CALL HANDLE_ERR(IERR)
   !IERR = NF_OPEN(TRIM(FNAME_NETCDF_RUNS),NF_WRITE,ncid_out); CALL HANDLE_ERR(IERR)
@@ -182,7 +182,7 @@ SUBROUTINE DEF_OUTPUT(nSpat1,nSpat2,NPSET,NTIM)
   !IERR = NF_PUT_VARA_TEXT(ncid_out,IVAR_ID,1,NPSET,name_psets); CALL HANDLE_ERR(IERR) ! write data
   !IERR = NF_PUT_VARA_TEXT(ncid_out,IVAR_ID,TSTART,TCOUNT,name_psets); CALL HANDLE_ERR(IERR) ! write data
 
-  PRINT *, 'NetCDF file for model runs defined with dimensions', nSpat1 , nSpat2, NPSET, NTIM
+  !PRINT *, 'NetCDF file for model runs defined with dimensions', nSpat1 , nSpat2, NPSET, NTIM
 
   IERR = NF_ENDDEF(ncid_out)
   IERR = NF_CLOSE(ncid_out)

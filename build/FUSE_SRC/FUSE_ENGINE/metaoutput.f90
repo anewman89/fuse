@@ -46,7 +46,7 @@ I=I+1; VNAME(I)='watr_2     '; LNAME(I)='total storage in the lower layer       
 
 IF(SMODL%iSNOWM.EQ.iopt_temp_index) THEN !loop through snow model bands
 
- print *, 'Creating variables for the snow model for ', N_BANDS ,'elevation bands'
+ !print *, 'Creating variables for the snow model for ', N_BANDS ,'elevation bands'
 
  I=I+1; VNAME(I)='swe_tot    '; LNAME(I)='total storage as snow                              '; VUNIT(I)='mm           '
 
@@ -107,7 +107,7 @@ I=I+1; VNAME(I)='max_iterns' ; LNAME(I)='maximum number of iterations in implici
 I=I+1; VNAME(I)='q_instnt   '; LNAME(I)='instantaneous runoff                               '; VUNIT(I)='mm timestep-1'
 I=I+1; VNAME(I)='q_routed   '; LNAME(I)='routed runoff                                      '; VUNIT(I)='mm timestep-1'
 
-print *, 'Setting NOUTVAR (number of forcing, state and flux variables) to', I
+!print *, 'Setting NOUTVAR (number of forcing, state and flux variables) to', I
 NOUTVAR=I
 
 END SUBROUTINE VARDESCRIBE

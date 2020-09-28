@@ -78,11 +78,11 @@ IMPLICIT NONE
 ! ---------------------------------------------------------------------------------------
 ! GET COMMAND-LINE ARGUMENTS...
 ! ---------------------------------------------------------------------------------------
-CHARACTER(LEN=64)                      :: DatString          ! string defining forcing data
-CHARACTER(LEN=64)                      :: dom_id             ! ID of the domain
+CHARACTER(LEN=256)                      :: DatString          ! string defining forcing data
+CHARACTER(LEN=256)                      :: dom_id             ! ID of the domain
 CHARACTER(LEN=6)                       :: FMODEL_ID='      ' ! integer defining FUSE model
 CHARACTER(LEN=10)                      :: fuse_mode='      ' ! fuse execution mode (run_def, run_best, run_pre, calib_sce)
-CHARACTER(LEN=64)                      :: file_para_list     ! txt file containing list of parameter sets
+CHARACTER(LEN=256)                      :: file_para_list     ! txt file containing list of parameter sets
 
 ! ---------------------------------------------------------------------------------------
 ! SETUP MODELS FOR SIMULATION -- POPULATE DATA STRUCTURES
@@ -181,12 +181,12 @@ ENDIF
 READ(FMODEL_ID,*) FUSE_ID                 ! integer defining FUSE model
 
 ! print command-line arguments
-print*, '1st command-line argument (DatString) = ', trim(DatString)
-print*, '2nd command-line argument (dom_id) = ', trim(dom_id)
-print*, '3rd command-line argument (FMODEL_ID) = ', FMODEL_ID
-print*, '4th command-line argument (fuse_mode) = ', fuse_mode
+!print*, '1st command-line argument (DatString) = ', trim(DatString)
+!print*, '2nd command-line argument (dom_id) = ', trim(dom_id)
+!print*, '3rd command-line argument (FMODEL_ID) = ', FMODEL_ID
+!print*, '4th command-line argument (fuse_mode) = ', fuse_mode
 IF(TRIM(fuse_mode).EQ.'run_pre')THEN
-  print*, '5th command-line argument (file_para_list) = ', file_para_list
+!  print*, '5th command-line argument (file_para_list) = ', file_para_list
 ENDIF
 
 ! ---------------------------------------------------------------------------------------
@@ -205,9 +205,9 @@ FORCINGINFO = TRIM(dom_id)//'_input_info.txt'
 MBANDS_INFO = TRIM(dom_id)//'_elev_bands_info.txt' ! probably not needed anymore
 ELEV_BANDS_NC = TRIM(dom_id)//'_elev_bands.nc'
 
-PRINT *, 'Variables defined based on domain name:'
-PRINT *, 'FORCINGINFO:', TRIM(FORCINGINFO)
-PRINT *, 'ELEV_BANDS_NC:', TRIM(ELEV_BANDS_NC)
+!PRINT *, 'Variables defined based on domain name:'
+!PRINT *, 'FORCINGINFO:', TRIM(FORCINGINFO)
+!PRINT *, 'ELEV_BANDS_NC:', TRIM(ELEV_BANDS_NC)
 
 ! defines method/parameters used for numerical solution - what is this line doing here?
 CALL GETNUMERIX(ERR,MESSAGE)
@@ -220,12 +220,12 @@ CALL GETNUMERIX(ERR,MESSAGE)
 call force_info(fuse_mode,err,message)
 if(err/=0)then; write(*,*) trim(message); stop; endif
 
-print *, 'Open forcing file:', trim(INPUT_PATH)//trim(forcefile)
+!print *, 'Open forcing file:', trim(INPUT_PATH)//trim(forcefile)
 
 ! open NetCDF forcing file
 err = nf90_open(trim(INPUT_PATH)//trim(forcefile), nf90_nowrite, ncid_forc)
 if (err.ne.0) write(*,*) trim(message); if (err.gt.0) stop
-PRINT *, 'NCID_FORC is', ncid_forc
+!PRINT *, 'NCID_FORC is', ncid_forc
 
 ! get the grid info (spatial and temporal dimensions) from the NetCDF file
 call read_ginfo(ncid_forc,err,message)
@@ -240,10 +240,10 @@ call juldayss(iy,im,id,ih,            &          ! convert it to julian date
 julian_time_steps=jdate_ref_netcdf+time_steps
 
 call caldatss(julian_time_steps(1),iy,im,id,ih,imin,isec)
-print *, 'Start date input file=',iy,im,id
+!print *, 'Start date input file=',iy,im,id
 
 call caldatss(julian_time_steps(numtim_in),iy,im,id,ih,imin,isec)
-print *, 'End date input file=',iy,im,id
+!print *, 'End date input file=',iy,im,id
 
 ! convert date for simulation into julian date
 call date_extractor(trim(date_start_sim),iy,im,id,ih)        ! break down date
@@ -291,13 +291,13 @@ read(numtim_sub_str,*,iostat=err) numtim_sub ! convert string to integer
 
 if(numtim_sub.eq.-9999)then
 
-  print *, 'numtim_sub = -9999, FUSE will be run in 1 chunck of ',numtim_sim, 'time steps'
+!  print *, 'numtim_sub = -9999, FUSE will be run in 1 chunck of ',numtim_sim, 'time steps'
 
   numtim_sub=numtim_sim ! no subperiods, run the whole time series
 
 else
 
-  print *, 'FUSE will be run in chuncks of ',numtim_sub, 'time steps'
+!  print *, 'FUSE will be run in chuncks of ',numtim_sub, 'time steps'
 
 end if
 
@@ -336,10 +336,10 @@ ELSE
 
 ENDIF
 
-print*, 'spatial dimensions = ', nSpat1, nSpat2
-print*, 'netCDF ID for forcing file', ncid_forc
-print*, 'NA_VALUE = ', NA_VALUE
-print*, 'GRID_FLAG = ', GRID_FLAG
+!print*, 'spatial dimensions = ', nSpat1, nSpat2
+!print*, 'netCDF ID for forcing file', ncid_forc
+!print*, 'NA_VALUE = ', NA_VALUE
+!print*, 'GRID_FLAG = ', GRID_FLAG
 
 ! Define model attributes (valid for all models)
 CALL UNIQUEMODL(NMOD)           ! get nmod unique models
@@ -403,7 +403,7 @@ ELSE IF(fuse_mode == 'run_pre')THEN  ! run FUSE with pre-defined parameter value
     CLOSE(21)
 
     if(file_pass.eq.1) THEN
-      print *, 'NUMPSET=', NUMPSET, 'based on the number of lines in ', TRIM(file_para_list)
+!      print *, 'NUMPSET=', NUMPSET, 'based on the number of lines in ', TRIM(file_para_list)
       ALLOCATE(name_psets(NUMPSET))
     END IF
   end do
@@ -540,9 +540,9 @@ ELSE IF(fuse_mode == 'run_best')THEN ! run FUSE with best (highest RMSE) paramet
   ! load best SCE parameter set from NetCDF file into APAR
   CALL GET_SCE_PARAM(FNAME_NETCDF_PARA_SCE,ONEMOD,NUMPAR,APAR)
 
-  print *, 'Running FUSE with best SCE parameter set'
+!  print *, 'Running FUSE with best SCE parameter set'
   CALL FUSE_RMSE(APAR,GRID_FLAG,NCID_FORC,RMSE,OUTPUT_FLAG,NUMPSET)
-  print *, 'Done running FUSE with best SCE parameter set'
+!  print *, 'Done running FUSE with best SCE parameter set'
 
 ELSE
 
@@ -568,12 +568,12 @@ ENDIF
 
 ! close NetCDF files
 IF(GRID_FLAG)THEN
-  PRINT *, 'Closing forcing file'
+!  PRINT *, 'Closing forcing file'
   err = nf90_close(ncid_forc)
   !if (err.ne.0) write(*,*) trim(message); if (err.gt.0) stop
 ENDIF
 
-PRINT *, 'Closing output file'
+!PRINT *, 'Closing output file'
 err = nf90_close(ncid_out)
 !if (err.ne.0) write(*,*) trim(message); if (err.gt.0) stop
 PRINT *, 'Done'
